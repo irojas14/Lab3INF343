@@ -31,3 +31,7 @@ var (
 )
 
 var FulcrumAddresses [3]string = [3]string{f1Addrs, f2Addrs, f3Addrs}
+
+func main() {
+
+}
