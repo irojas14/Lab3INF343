@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option go_package = "github.com/irojas14/Lab3INF343/Proto";
+
+package Proto;
+
+// SERVICIOS
+
+service Informante {
+}
+
+service MosEisley {
+    rpc RecibirComando (SolicitudRecibirComando) returns (RespuestaRecibirComandoMosEisley);
+    rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
+}
+
+service Fulcrum {
+    rpc RecibirComando (SolicitudRecibirComando) returns (RespuestaRecibirComandoFulcrum);
+    rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
+}
+
+// ENUMS
+
+enum Comandos {
+    AddCity = 0;
+    UpdateName = 1;
+    UpdateNumber = 2;
+    DeleteCity = 3;
+}
+
+// MENSAJES
+
+// MENSAJES de Solicitud y Respuesta
+
+message SolicitudRecibirComando {
+    Comando cmd = 1;
+}
+
+message RespuestaRecibirComandoMosEisley {
+    string dir_fulcrum = 1;
+}
+
+message RespuestaRecibirComandoFulcrum {
+    RelojVector reloj_vec = 1;
+}
+
+message SolicitudGetNumberRebelds {
+    Ubicacion coord = 1;
+}
+
+message RespuestaGetNumberRebelds {
+    int64 num_rebels = 1;
+    RelojVector reloj_vec = 2;
+}
+
+// ESTRUCTURAS
+
+message Comando {
+    Comandos comando = 1;
+    Ubicacion coord = 2;
+    string nuevo_valor = 4;
+}
+
+message RelojVector {
+    string name = 1;
+    int64 x = 2;
+    int64 y = 3;
+    int64 z = 4;
+}
+
+message Ubicacion {
+    string nombre_planeta = 1;
+    string nombre_ciudad = 2;
+}
