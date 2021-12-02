@@ -1,5 +1,14 @@
 package main
 
+import (
+	"log"
+	"net"
+	"os"
+
+	pb "github.com/irojas14/Lab3INF343/Proto"
+	"google.golang.org/grpc"
+)
+
 const (
 	port    = ":50054"
 	local   = "localhost" + port
@@ -18,10 +27,13 @@ const (
 )
 
 const (
-	dnLocal = "localhost"
-	local1  = dnLocal + Port
-	local2  = dnLocal + Port
-	local3  = dnLocal + Port
+	port1 = "50050"
+	port2 = "50051"
+	port3 = "50052"
+	Local = "localhost"
+	local1  = Local + port1
+	local2  = Local + port2
+	local3  = Local + port3
 )
 
 var (
@@ -32,6 +44,26 @@ var (
 
 var FulcrumAddresses [3]string = [3]string{f1Addrs, f2Addrs, f3Addrs}
 
-func main() {
+type server struct {
+	pb.UnimplementedMosEisleyServer
+}
 
+func main() {
+	srvAddr := address
+	if len(os.Args) == 2 {
+		srvAddr = local
+	}
+
+	lis, err := net.Listen("tcp", srvAddr)
+	if err != nil {
+		log.Fatalf("failed to listen: %v\n", err)
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterMosEisleyServer(s, &server{})
+	log.Printf("Juego Inicializado: escuchando en %v\n", lis.Addr())
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
