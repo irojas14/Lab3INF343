@@ -6,22 +6,24 @@ package Proto;
 
 // SERVICIOS
 
-service Informante {
-}
-
 service MosEisley {
-    rpc RecibirComando (SolicitudRecibirComando) returns (RespuestaRecibirComandoMosEisley);
+    rpc Comando (SolicitudComando) returns (RespuestaComandoMosEisley);
     rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
 }
 
 service Fulcrum {
-    rpc RecibirComando (SolicitudRecibirComando) returns (RespuestaRecibirComandoFulcrum);
+    rpc Comando (SolicitudComando) returns (RespuestaComandoFulcrum);
     rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
 }
 
 // ENUMS
 
-enum Comandos {
+enum ActorType {
+    Informante = 0;
+    Leia = 1;
+}
+
+enum TipoComando {
     AddCity = 0;
     UpdateName = 1;
     UpdateNumber = 2;
@@ -32,15 +34,15 @@ enum Comandos {
 
 // MENSAJES de Solicitud y Respuesta
 
-message SolicitudRecibirComando {
+message SolicitudComando {
     Comando cmd = 1;
 }
 
-message RespuestaRecibirComandoMosEisley {
+message RespuestaComandoMosEisley {
     string dir_fulcrum = 1;
 }
 
-message RespuestaRecibirComandoFulcrum {
+message RespuestaComandoFulcrum {
     RelojVector reloj_vec = 1;
 }
 
@@ -49,20 +51,24 @@ message SolicitudGetNumberRebelds {
 }
 
 message RespuestaGetNumberRebelds {
-    int64 num_rebels = 1;
-    RelojVector reloj_vec = 2;
+    string archivo_name = 1;
+    string fulcrum_dir = 2;
+    int64 num_rebels = 3;
+    RelojVector reloj_vec = 4;
 }
 
 // ESTRUCTURAS
 
 message Comando {
-    Comandos comando = 1;
-    Ubicacion coord = 2;
-    string nuevo_valor = 4;
+    TipoComando tipo = 1;
+    string nombre = 2;
+    Ubicacion coord = 3;
+    string nuevo_valor_str = 4;
+    int64 nuevo_valor_int = 5;
 }
 
 message RelojVector {
-    string name = 1;
+    string nombre = 1;
     int64 x = 2;
     int64 y = 3;
     int64 z = 4;

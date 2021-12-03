@@ -14,60 +14,11 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// InformanteClient is the client API for Informante service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type InformanteClient interface {
-}
-
-type informanteClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewInformanteClient(cc grpc.ClientConnInterface) InformanteClient {
-	return &informanteClient{cc}
-}
-
-// InformanteServer is the server API for Informante service.
-// All implementations must embed UnimplementedInformanteServer
-// for forward compatibility
-type InformanteServer interface {
-	mustEmbedUnimplementedInformanteServer()
-}
-
-// UnimplementedInformanteServer must be embedded to have forward compatible implementations.
-type UnimplementedInformanteServer struct {
-}
-
-func (UnimplementedInformanteServer) mustEmbedUnimplementedInformanteServer() {}
-
-// UnsafeInformanteServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to InformanteServer will
-// result in compilation errors.
-type UnsafeInformanteServer interface {
-	mustEmbedUnimplementedInformanteServer()
-}
-
-func RegisterInformanteServer(s grpc.ServiceRegistrar, srv InformanteServer) {
-	s.RegisterService(&Informante_ServiceDesc, srv)
-}
-
-// Informante_ServiceDesc is the grpc.ServiceDesc for Informante service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Informante_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Proto.Informante",
-	HandlerType: (*InformanteServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "Proto/starwars.proto",
-}
-
 // MosEisleyClient is the client API for MosEisley service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MosEisleyClient interface {
-	RecibirComando(ctx context.Context, in *SolicitudRecibirComando, opts ...grpc.CallOption) (*RespuestaRecibirComandoMosEisley, error)
+	Comando(ctx context.Context, in *SolicitudComando, opts ...grpc.CallOption) (*RespuestaComandoMosEisley, error)
 	GetNumberRebelds(ctx context.Context, in *SolicitudGetNumberRebelds, opts ...grpc.CallOption) (*RespuestaGetNumberRebelds, error)
 }
 
@@ -79,9 +30,9 @@ func NewMosEisleyClient(cc grpc.ClientConnInterface) MosEisleyClient {
 	return &mosEisleyClient{cc}
 }
 
-func (c *mosEisleyClient) RecibirComando(ctx context.Context, in *SolicitudRecibirComando, opts ...grpc.CallOption) (*RespuestaRecibirComandoMosEisley, error) {
-	out := new(RespuestaRecibirComandoMosEisley)
-	err := c.cc.Invoke(ctx, "/Proto.MosEisley/RecibirComando", in, out, opts...)
+func (c *mosEisleyClient) Comando(ctx context.Context, in *SolicitudComando, opts ...grpc.CallOption) (*RespuestaComandoMosEisley, error) {
+	out := new(RespuestaComandoMosEisley)
+	err := c.cc.Invoke(ctx, "/Proto.MosEisley/Comando", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +52,7 @@ func (c *mosEisleyClient) GetNumberRebelds(ctx context.Context, in *SolicitudGet
 // All implementations must embed UnimplementedMosEisleyServer
 // for forward compatibility
 type MosEisleyServer interface {
-	RecibirComando(context.Context, *SolicitudRecibirComando) (*RespuestaRecibirComandoMosEisley, error)
+	Comando(context.Context, *SolicitudComando) (*RespuestaComandoMosEisley, error)
 	GetNumberRebelds(context.Context, *SolicitudGetNumberRebelds) (*RespuestaGetNumberRebelds, error)
 	mustEmbedUnimplementedMosEisleyServer()
 }
@@ -110,8 +61,8 @@ type MosEisleyServer interface {
 type UnimplementedMosEisleyServer struct {
 }
 
-func (UnimplementedMosEisleyServer) RecibirComando(context.Context, *SolicitudRecibirComando) (*RespuestaRecibirComandoMosEisley, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecibirComando not implemented")
+func (UnimplementedMosEisleyServer) Comando(context.Context, *SolicitudComando) (*RespuestaComandoMosEisley, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Comando not implemented")
 }
 func (UnimplementedMosEisleyServer) GetNumberRebelds(context.Context, *SolicitudGetNumberRebelds) (*RespuestaGetNumberRebelds, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNumberRebelds not implemented")
@@ -129,20 +80,20 @@ func RegisterMosEisleyServer(s grpc.ServiceRegistrar, srv MosEisleyServer) {
 	s.RegisterService(&MosEisley_ServiceDesc, srv)
 }
 
-func _MosEisley_RecibirComando_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SolicitudRecibirComando)
+func _MosEisley_Comando_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SolicitudComando)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MosEisleyServer).RecibirComando(ctx, in)
+		return srv.(MosEisleyServer).Comando(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Proto.MosEisley/RecibirComando",
+		FullMethod: "/Proto.MosEisley/Comando",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MosEisleyServer).RecibirComando(ctx, req.(*SolicitudRecibirComando))
+		return srv.(MosEisleyServer).Comando(ctx, req.(*SolicitudComando))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -173,8 +124,8 @@ var MosEisley_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MosEisleyServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RecibirComando",
-			Handler:    _MosEisley_RecibirComando_Handler,
+			MethodName: "Comando",
+			Handler:    _MosEisley_Comando_Handler,
 		},
 		{
 			MethodName: "GetNumberRebelds",
@@ -189,7 +140,7 @@ var MosEisley_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FulcrumClient interface {
-	RecibirComando(ctx context.Context, in *SolicitudRecibirComando, opts ...grpc.CallOption) (*RespuestaRecibirComandoFulcrum, error)
+	Comando(ctx context.Context, in *SolicitudComando, opts ...grpc.CallOption) (*RespuestaComandoFulcrum, error)
 	GetNumberRebelds(ctx context.Context, in *SolicitudGetNumberRebelds, opts ...grpc.CallOption) (*RespuestaGetNumberRebelds, error)
 }
 
@@ -201,9 +152,9 @@ func NewFulcrumClient(cc grpc.ClientConnInterface) FulcrumClient {
 	return &fulcrumClient{cc}
 }
 
-func (c *fulcrumClient) RecibirComando(ctx context.Context, in *SolicitudRecibirComando, opts ...grpc.CallOption) (*RespuestaRecibirComandoFulcrum, error) {
-	out := new(RespuestaRecibirComandoFulcrum)
-	err := c.cc.Invoke(ctx, "/Proto.Fulcrum/RecibirComando", in, out, opts...)
+func (c *fulcrumClient) Comando(ctx context.Context, in *SolicitudComando, opts ...grpc.CallOption) (*RespuestaComandoFulcrum, error) {
+	out := new(RespuestaComandoFulcrum)
+	err := c.cc.Invoke(ctx, "/Proto.Fulcrum/Comando", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +174,7 @@ func (c *fulcrumClient) GetNumberRebelds(ctx context.Context, in *SolicitudGetNu
 // All implementations must embed UnimplementedFulcrumServer
 // for forward compatibility
 type FulcrumServer interface {
-	RecibirComando(context.Context, *SolicitudRecibirComando) (*RespuestaRecibirComandoFulcrum, error)
+	Comando(context.Context, *SolicitudComando) (*RespuestaComandoFulcrum, error)
 	GetNumberRebelds(context.Context, *SolicitudGetNumberRebelds) (*RespuestaGetNumberRebelds, error)
 	mustEmbedUnimplementedFulcrumServer()
 }
@@ -232,8 +183,8 @@ type FulcrumServer interface {
 type UnimplementedFulcrumServer struct {
 }
 
-func (UnimplementedFulcrumServer) RecibirComando(context.Context, *SolicitudRecibirComando) (*RespuestaRecibirComandoFulcrum, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecibirComando not implemented")
+func (UnimplementedFulcrumServer) Comando(context.Context, *SolicitudComando) (*RespuestaComandoFulcrum, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Comando not implemented")
 }
 func (UnimplementedFulcrumServer) GetNumberRebelds(context.Context, *SolicitudGetNumberRebelds) (*RespuestaGetNumberRebelds, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNumberRebelds not implemented")
@@ -251,20 +202,20 @@ func RegisterFulcrumServer(s grpc.ServiceRegistrar, srv FulcrumServer) {
 	s.RegisterService(&Fulcrum_ServiceDesc, srv)
 }
 
-func _Fulcrum_RecibirComando_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SolicitudRecibirComando)
+func _Fulcrum_Comando_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SolicitudComando)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FulcrumServer).RecibirComando(ctx, in)
+		return srv.(FulcrumServer).Comando(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Proto.Fulcrum/RecibirComando",
+		FullMethod: "/Proto.Fulcrum/Comando",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FulcrumServer).RecibirComando(ctx, req.(*SolicitudRecibirComando))
+		return srv.(FulcrumServer).Comando(ctx, req.(*SolicitudComando))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -295,8 +246,8 @@ var Fulcrum_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FulcrumServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RecibirComando",
-			Handler:    _Fulcrum_RecibirComando_Handler,
+			MethodName: "Comando",
+			Handler:    _Fulcrum_Comando_Handler,
 		},
 		{
 			MethodName: "GetNumberRebelds",
