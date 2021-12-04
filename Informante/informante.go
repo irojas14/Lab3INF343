@@ -119,36 +119,6 @@ func CreateBaseCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
 	}
 }
 
-func CreateAddCityValueCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion, nuevo_valor int64) *pb.Comando {
-	cmd := CreateBaseCmd(tipoCmd, coord)
-	cmd.NuevoValorInt = nuevo_valor
-	return cmd
-}
-
-func CreateAddCityNonValueCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
-	cmd := CreateBaseCmd(tipoCmd, coord)
-	return cmd
-}
-
-
-
-func CreateUpdateNameCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion, nuevo_valor string) *pb.Comando{
-	cmd := CreateBaseCmd(tipoCmd, coord)
-	cmd.NuevoValorStr = nuevo_valor
-	return cmd
-}
-
-func CreateUpdateNumberCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion, nuevo_valor int64) *pb.Comando {
-	cmd := CreateBaseCmd(tipoCmd, coord)
-	cmd.NuevoValorInt = nuevo_valor
-	return cmd
-}
-
-func CreateDeleteCityCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
-	cmd := CreateBaseCmd(tipoCmd, coord)
-	return cmd
-}
-
 // FUNCIONES LEIA
 
 func GetNumberRebelds(c pb.MosEisleyClient, nombre_planeta string, nombre_ciudad string) error {
@@ -179,3 +149,35 @@ func GetNumberRebelds(c pb.MosEisleyClient, nombre_planeta string, nombre_ciudad
 	}
 	return nil
 }
+
+/*
+func CreateAddCityValueCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion, nuevo_valor int64) *pb.Comando {
+	cmd := CreateBaseCmd(tipoCmd, coord)
+	cmd.NuevoValorInt = nuevo_valor
+	return cmd
+}
+
+func CreateAddCityNonValueCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
+	cmd := CreateBaseCmd(tipoCmd, coord)
+	return cmd
+}
+
+
+
+func CreateUpdateNameCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion, nuevo_valor string) *pb.Comando{
+	cmd := CreateBaseCmd(tipoCmd, coord)
+	cmd.NuevoValorStr = nuevo_valor
+	return cmd
+}
+
+func CreateUpdateNumberCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion, nuevo_valor int64) *pb.Comando {
+	cmd := CreateBaseCmd(tipoCmd, coord)
+	cmd.NuevoValorInt = nuevo_valor
+	return cmd
+}
+
+func CreateDeleteCityCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
+	cmd := CreateBaseCmd(tipoCmd, coord)
+	return cmd
+}
+*/

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"os"
@@ -48,11 +49,19 @@ type server struct {
 	pb.UnimplementedMosEisleyServer
 }
 
+func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.RespuestaComandoMosEisley, error){
+	// Switch para revisar el tipo del comando y actuar.
+	return &pb.RespuestaComandoMosEisley{}, nil
+}
+
 func main() {
 	srvAddr := address
+	curAddrs = RemoteAddrs
 	if len(os.Args) == 2 {
 		srvAddr = local
+		curAddrs = localAddrs
 	}
+	log.Printf("Direcciones Fulcrum: %v\n", curAddrs)
 
 	lis, err := net.Listen("tcp", srvAddr)
 	if err != nil {
