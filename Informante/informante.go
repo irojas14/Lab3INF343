@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	mos_port   = ":50054"
-	local  = "localhost" + mos_port
-	mos_addr = "dist150.inf.santiago.usm.cl" + mos_port
+	mos_port = ":50054"
+	local    = "localhost" + mos_port
+	mos_addr = "dist149.inf.santiago.usm.cl" + mos_port
 )
 
 var (
@@ -24,27 +24,18 @@ var (
 
 type Cambio struct {
 	archivo_name string
-	comando pb.Comando
-	reloj_vec *pb.RelojVector
-	fulcrum_dir string
-}
-
-type Consulta struct {
-	archivo_name string
-	coord *pb.Ubicacion
-	rebel_num int64
-	reloj_vec *pb.RelojVector
-	fulcrum_dir string
+	comando      pb.Comando
+	reloj_vec    *pb.RelojVector
+	fulcrum_dir  string
 }
 
 var (
-	Tipo pb.ActorType
+	Tipo    pb.ActorType
 	cambios []Cambio
-	consultas []Consulta
 )
 
 func main() {
-	
+
 	addr = mos_addr
 	if len(os.Args) == 2 {
 		addr = local
@@ -74,9 +65,11 @@ func CreateBaseComandoAndConn(coord *pb.Ubicacion) (*pb.Comando, *grpc.ClientCon
 
 func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 	cmd, conn, err := CreateBaseComandoAndConn(coord)
-	if (err != nil) {return}
+	if err != nil {
+		return
+	}
 	defer conn.Close()
-	
+
 	cmd.NuevoValorInt = nuevo_valor
 	c := pb.NewMosEisleyClient(conn)
 	Execute(c, cmd)
@@ -84,7 +77,9 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 
 func AddCityNonVal(coord *pb.Ubicacion) {
 	cmd, conn, err := CreateBaseComandoAndConn(coord)
-	if (err != nil) {return}
+	if err != nil {
+		return
+	}
 	defer conn.Close()
 
 	c := pb.NewMosEisleyClient(conn)
@@ -101,9 +96,9 @@ func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
 
 func Execute(c pb.MosEisleyClient, cmd *pb.Comando) error {
 	r, err := c.Comando(context.Background(), &pb.SolicitudComando{
-		Cmd : cmd,
+		Cmd: cmd,
 	})
-	if (err != nil) {
+	if err != nil {
 		log.Fatalf("Error al realizar el comando: %v\n", err)
 		return err
 	}
@@ -113,41 +108,10 @@ func Execute(c pb.MosEisleyClient, cmd *pb.Comando) error {
 
 func CreateBaseCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
 	return &pb.Comando{
-		Tipo: tipoCmd,
+		Tipo:   tipoCmd,
 		Nombre: funcs.CmdToStr(tipoCmd),
-		Coord: coord,
+		Coord:  coord,
 	}
-}
-
-// FUNCIONES LEIA
-
-func GetNumberRebelds(c pb.MosEisleyClient, nombre_planeta string, nombre_ciudad string) error {
-	if Tipo == pb.ActorType_Leia {
-		// Conectarse y pedir la informacion a Mos Eisley
-
-		coord := pb.Ubicacion{
-			NombrePlaneta: nombre_planeta,
-			NombreCiudad: nombre_ciudad,
-		}
-
-		r, err := c.GetNumberRebelds(context.Background(), &pb.SolicitudGetNumberRebelds{
-			Coord: &coord,
-		})
-
-		if (err != nil) {
-			log.Fatalf("Error al preguntar por rebeldes en %v - %v. Error: %v\n", coord.NombrePlaneta, coord.NombreCiudad, err)
-			return err
-		}
-
-		consultas = append(consultas, Consulta{
-			archivo_name:     r.ArchivoName,
-			coord:       &coord,
-			rebel_num:   r.NumRebels,
-			reloj_vec:   r.RelojVec,
-			fulcrum_dir: r.FulcrumDir,
-		})
-	}
-	return nil
 }
 
 /*
