@@ -17,10 +17,6 @@ const (
 )
 
 const (
-	nameNodeFile = "registro.txt"
-)
-
-const (
 	Port    = ":50055"
 	f1Addrs = "dist149.inf.santiago.usm.cl" + Port
 	f2Addrs = "dist151.inf.santiago.usm.cl" + Port
@@ -28,9 +24,9 @@ const (
 )
 
 const (
-	port1 = "50050"
-	port2 = "50051"
-	port3 = "50052"
+	port1 = ":50500"
+	port2 = ":50501"
+	port3 = ":50502"
 	Local = "localhost"
 	local1  = Local + port1
 	local2  = Local + port2
@@ -43,7 +39,9 @@ var (
 	curAddrs    [3]string
 )
 
-var FulcrumAddresses [3]string = [3]string{f1Addrs, f2Addrs, f3Addrs}
+var (
+	curElection int = 0;
+)
 
 type server struct {
 	pb.UnimplementedMosEisleyServer
@@ -51,7 +49,20 @@ type server struct {
 
 func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.RespuestaComandoMosEisley, error){
 	// Switch para revisar el tipo del comando y actuar.
-	return &pb.RespuestaComandoMosEisley{}, nil
+	log.Printf("En Mos Eisley Comando, a elegir Fulcrum")
+	faddr := EleccionFulcrum();
+	log.Printf("Dirección Elegida %v\n", faddr)
+	return &pb.RespuestaComandoMosEisley{DirFulcrum: faddr,}, nil
+}
+
+func EleccionFulcrum() string {
+
+	faddr := curAddrs[curElection];
+	curElection++;
+	if (curElection >= 3) {
+		curElection = 0;
+	}
+	return faddr
 }
 
 func main() {
@@ -61,6 +72,7 @@ func main() {
 		srvAddr = local
 		curAddrs = localAddrs
 	}
+	log.Printf("Dirección MosEisley: %v\n", srvAddr)
 	log.Printf("Direcciones Fulcrum: %v\n", curAddrs)
 
 	lis, err := net.Listen("tcp", srvAddr)
