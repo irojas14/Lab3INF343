@@ -54,10 +54,10 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 	switch in.Cmd.Tipo {
 	case pb.TipoComando_AddCity:
 		RelojVectorRes = AddCity(in.Cmd)
+	case pb.TipoComando_UpdateName:
+		RelojVectorRes = UpdateName(in.Cmd)		
 	case pb.TipoComando_DeleteCity:
 		DeleteCity(in.Cmd)
-	case pb.TipoComando_UpdateName:
-		UpdateName(in.Cmd)
 	case pb.TipoComando_UpdateNumber:
 		UpdateNumber(in.Cmd)
 	}
@@ -125,13 +125,47 @@ func AddCity(cmd *pb.Comando) *pb.RelojVector {
 	return RelojesVectoresDict[nombreArchivo]
 }
 
+func UpdateName(cmd *pb.Comando) *pb.RelojVector {
+
+	nombreArchivo := cmd.Coord.NombrePlaneta + "_" + "Info"
+	nombreArchivoLog := cmd.Coord.NombrePlaneta + "_" + "Log"
+
+	// Vemos que el archivo existe
+	if funcs.IsInServer(nombreArchivo, curFilesPath) {
+
+		// Si existe, vemos si existe la ciudad para actualizarla
+		b, err := funcs.CambiarNombreCiudad(curFilesPath + "/" + nombreArchivo, cmd)
+
+		// si no existe la ciudad, retornamos nil
+		if (!b || err != nil) {
+			return nil
+		}
+
+		// El cambio se llevo a cabo de los Registros Planetarios. Registramos el cambio en Log
+		err = funcs.InsertarComandoEnLog(curFilesPath + "/" + nombreArchivoLog, cmd) //
+
+		if err != nil {
+			return nil
+		}
+
+		if RelojesVectoresDict[nombreArchivo] == nil {
+			RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
+				Nombre: nombreArchivo,
+				X: 0, Y: 0, Z: 0,
+			}
+		}
+
+		ModificarRelojVector(nombreArchivo)
+	} else {
+		return nil
+	}
+	return RelojesVectoresDict[nombreArchivo]
+}
+
 func DeleteCity(cmd *pb.Comando) {
 	
 }
 
-func UpdateName(cmd *pb.Comando) {
-
-}
 
 func ModificarRelojVector(nombreArchivo string) {
 	fmt.Printf("Nombre Archivo a Buscar: %v\n", nombreArchivo)

@@ -64,7 +64,7 @@ func IsInServer(nombreRegistro string, ruta string) bool {
 }
 
 //Hay que editar esta funcion para adaptarla a esta tarea
-func InsertarComandoEnRegistro(NombreDelArchivo string, comando *pb.Comando) error{
+func InsertarComandoEnRegistro(NombreDelArchivo string, comando *pb.Comando) error {
 	// Open file using READ & WRITE permission.
 	var file, err = os.OpenFile(NombreDelArchivo, os.O_WRONLY, 0644)
 	seReemplazo := false
@@ -116,45 +116,6 @@ func InsertarComandoEnRegistro(NombreDelArchivo string, comando *pb.Comando) err
 			}
 			seReemplazo=false
 		}
-			/*
-		case "UpdateName":
-			// Hacer algo
-			// Write some text line-by-line to file.
-			var linea string = FormatInt32(jugada) + "\n"
-			_, err = file.WriteString(linea)
-			if isError(err) {
-				return
-			}
-		case "UpdateNumber":
-			// Hacer algo
-			// Write some text line-by-line to file.
-			var linea string = FormatInt32(jugada) + "\n"
-			_, err = file.WriteString(linea)
-			if isError(err) {
-				return
-			}
-		case "DeleteCity":
-			// Hacer algo
-			// Write some text line-by-line to file.
-			var linea string = FormatInt32(jugada) + "\n"
-			_, err = file.WriteString(linea)
-			if isError(err) {
-				return
-			}
-		}
-		*/
-
-	/*
-		for _, jugada := range JugadasDelJugador {
-			// Hacer algo
-			// Write some text line-by-line to file.
-			var linea string = FormatInt32(jugada) + "\n"
-			_, err = file.WriteString(linea)
-			if isError(err) {
-				return
-			}
-		}
-	*/
 
 	err = file.Sync()
 	if isError(err) {
@@ -162,6 +123,56 @@ func InsertarComandoEnRegistro(NombreDelArchivo string, comando *pb.Comando) err
 		return err
 	}
 	return nil
+}
+
+func CambiarNombreCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
+	var file, err = os.OpenFile(NombreDelArchivo, os.O_WRONLY, 0644)
+
+	if isError(err) {
+		log.Fatalf("Error al abrir archivo en Insertar Cambios en Registro. Archivo: %v - Error: %v\n", NombreDelArchivo, err)
+		return false, err
+	}
+	defer file.Close()
+			
+	// Aqui veremos si linea ya existe dentro del archivo del planeta.
+	b, err := ioutil.ReadFile(NombreDelArchivo)
+	if err != nil {
+		panic(err)
+	}
+
+	lines := strings.Split(string(b), "\n")
+
+	fmt.Printf("Principio Lines: %v - len: %v\n", lines, len(lines))
+
+	var nuevaLinea string = ""
+	for i, line := range lines {
+		if strings.Contains(line, comando.Coord.NombreCiudad) {
+			fmt.Println("La ciudad existe")
+			items := strings.Split(line, " ")
+			log.Printf("Items: %v: len: %v\n", items, len(items))
+			log.Printf("Comando Nuevo Valor: %v\n", comando.NuevoValorStr)
+			items[1] = comando.NuevoValorStr
+			nuevaLinea = strings.Join(items, " ")
+			log.Printf("Nueva Línea: %v\n", nuevaLinea)
+			lines[i] = nuevaLinea
+		}
+	}
+
+	if (nuevaLinea == "") {
+		fmt.Print("No Existe la Ciudad")
+		return false, nil
+	}
+
+	output := strings.Join(lines, "\n")
+
+	fmt.Printf("Final Output: %v --\n", output)
+	
+	_, err = file.WriteString(output)
+	if isError(err) {
+		log.Fatalf("Error al escribir linea de archivo %v. Error: %v\n", NombreDelArchivo, err)
+		return false, err;
+	}
+	return true, nil
 }
 
 func FormatInt32(n int32) string {
