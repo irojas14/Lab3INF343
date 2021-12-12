@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	port = ":50500"
-	port2 = ":50501"
-	port3 = ":50502"
-	local = "localhost"
-	local1   = local + port
-	local2 = local + port2
-	local3 = local + port3
+	port    = ":50500"
+	port2   = ":50501"
+	port3   = ":50502"
+	local   = "localhost"
+	local1  = local + port
+	local2  = local + port2
+	local3  = local + port3
 	f1Addrs = "dist149.inf.santiago.usm.cl" + port
 	f2Addrs = "dist151.inf.santiago.usm.cl" + port
 	f3Addrs = "dist152.inf.santiago.usm.cl" + port
@@ -33,7 +33,7 @@ var (
 )
 
 var (
-	FulcrumId int
+	FulcrumId    int
 	curFilesPath string
 )
 
@@ -55,19 +55,19 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 	case pb.TipoComando_AddCity:
 		RelojVectorRes = AddCity(in.Cmd)
 	case pb.TipoComando_UpdateName:
-		RelojVectorRes = UpdateName(in.Cmd)		
+		RelojVectorRes = UpdateName(in.Cmd)
 	case pb.TipoComando_DeleteCity:
 		DeleteCity(in.Cmd)
 	case pb.TipoComando_UpdateNumber:
 		UpdateNumber(in.Cmd)
 	}
-	return &pb.RespuestaComandoFulcrum{RelojVec: RelojVectorRes,}, nil
+	return &pb.RespuestaComandoFulcrum{RelojVec: RelojVectorRes}, nil
 }
 
 func AddCity(cmd *pb.Comando) *pb.RelojVector {
 	nombreArchivo := cmd.Coord.NombrePlaneta + "_" + "Info"
 	nombreArchivoLog := cmd.Coord.NombrePlaneta + "_" + "Log"
-	
+
 	existeBool := funcs.IsInServer(nombreArchivo, curFilesPath)
 
 	if existeBool {
@@ -78,18 +78,18 @@ func AddCity(cmd *pb.Comando) *pb.RelojVector {
 		if RelojesVectoresDict[nombreArchivo] == nil {
 			RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
 				Nombre: nombreArchivo,
-				X: 0, Y: 0, Z: 0,
+				X:      0, Y: 0, Z: 0,
+			}
 		}
-	}
 
-		err := funcs.InsertarComandoEnRegistro(curFilesPath + "/" + nombreArchivo, cmd) // WIP
-		if (err != nil) {
+		err := funcs.InsertarComandoEnRegistro(curFilesPath+"/"+nombreArchivo, cmd) // WIP
+		if err != nil {
 			return nil
 		}
 
 		// Registramos el cambio en el Log asociado
-		err = funcs.InsertarComandoEnLog(curFilesPath + "/" + nombreArchivoLog, cmd)
-		if (err != nil) {
+		err = funcs.InsertarComandoEnLog(curFilesPath+"/"+nombreArchivoLog, cmd)
+		if err != nil {
 			return nil
 		}
 	} else {
@@ -97,16 +97,16 @@ func AddCity(cmd *pb.Comando) *pb.RelojVector {
 
 		// Creamos su Reloj de Vectores
 		RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
-			Nombre: nombreArchivo, 
-			X: 0, Y: 0, Z: 0,
+			Nombre: nombreArchivo,
+			X:      0, Y: 0, Z: 0,
 		}
 
 		// Creamos el Archivo de Registro Planetario
 		funcs.CrearTxt(curFilesPath + "/" + nombreArchivo) // creamos el archivo de Info
 
 		// Insertamos el comando en el Registro Planetario
-		err := funcs.InsertarComandoEnRegistro(curFilesPath + "/" + nombreArchivo, cmd)
-		if (err != nil) {
+		err := funcs.InsertarComandoEnRegistro(curFilesPath+"/"+nombreArchivo, cmd)
+		if err != nil {
 			return nil
 		}
 
@@ -114,8 +114,8 @@ func AddCity(cmd *pb.Comando) *pb.RelojVector {
 		funcs.CrearTxt(curFilesPath + "/" + nombreArchivoLog) // creamos el archivo Log
 
 		// Registramos el cambio en el Log
-		err = funcs.InsertarComandoEnLog(curFilesPath + "/" + nombreArchivoLog, cmd) //
-		if (err != nil) {
+		err = funcs.InsertarComandoEnLog(curFilesPath+"/"+nombreArchivoLog, cmd) //
+		if err != nil {
 			return nil
 		}
 	}
@@ -134,15 +134,15 @@ func UpdateName(cmd *pb.Comando) *pb.RelojVector {
 	if funcs.IsInServer(nombreArchivo, curFilesPath) {
 
 		// Si existe, vemos si existe la ciudad para actualizarla
-		b, err := funcs.CambiarNombreCiudad(curFilesPath + "/" + nombreArchivo, cmd)
+		b, err := funcs.CambiarNombreCiudad(curFilesPath+"/"+nombreArchivo, cmd)
 
 		// si no existe la ciudad, retornamos nil
-		if (!b || err != nil) {
+		if !b || err != nil {
 			return nil
 		}
 
 		// El cambio se llevo a cabo de los Registros Planetarios. Registramos el cambio en Log
-		err = funcs.InsertarComandoEnLog(curFilesPath + "/" + nombreArchivoLog, cmd) //
+		err = funcs.InsertarComandoEnLog(curFilesPath+"/"+nombreArchivoLog, cmd) //
 
 		if err != nil {
 			return nil
@@ -151,7 +151,7 @@ func UpdateName(cmd *pb.Comando) *pb.RelojVector {
 		if RelojesVectoresDict[nombreArchivo] == nil {
 			RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
 				Nombre: nombreArchivo,
-				X: 0, Y: 0, Z: 0,
+				X:      0, Y: 0, Z: 0,
 			}
 		}
 
@@ -162,10 +162,79 @@ func UpdateName(cmd *pb.Comando) *pb.RelojVector {
 	return RelojesVectoresDict[nombreArchivo]
 }
 
-func DeleteCity(cmd *pb.Comando) {
-	
+// -------------------Maxi porfa corrobora que está bien esto------------------------------------
+func DeleteCity(cmd *pb.Comando) *pb.RelojVector {
+	nombreArchivo := cmd.Coord.NombrePlaneta + "_" + "Info"
+	nombreArchivoLog := cmd.Coord.NombrePlaneta + "_" + "Log"
+
+	// Vemos que el archivo existe
+	if funcs.IsInServer(nombreArchivo, curFilesPath) {
+
+		// Si existe, vemos si existe la ciudad para actualizarla
+		b, err := funcs.BorrarCiudad(curFilesPath+"/"+nombreArchivo, cmd)
+
+		// si no existe la ciudad, retornamos nil
+		if !b || err != nil {
+			return nil
+		}
+
+		// El cambio se llevo a cabo de los Registros Planetarios. Registramos el cambio en Log
+		err = funcs.InsertarComandoEnLog(curFilesPath+"/"+nombreArchivoLog, cmd) //
+
+		if err != nil {
+			return nil
+		}
+
+		if RelojesVectoresDict[nombreArchivo] == nil {
+			RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
+				Nombre: nombreArchivo,
+				X:      0, Y: 0, Z: 0,
+			}
+		}
+
+		ModificarRelojVector(nombreArchivo)
+	} else {
+		return nil
+	}
+	return RelojesVectoresDict[nombreArchivo]
 }
 
+// -------------------Maxi porfa corrobora que está bien esto------------------------------------
+func UpdateNumber(cmd *pb.Comando) *pb.RelojVector {
+	nombreArchivo := cmd.Coord.NombrePlaneta + "_" + "Info"
+	nombreArchivoLog := cmd.Coord.NombrePlaneta + "_" + "Log"
+
+	// Vemos que el archivo existe
+	if funcs.IsInServer(nombreArchivo, curFilesPath) {
+
+		// Si existe, vemos si existe la ciudad para actualizarla
+		b, err := funcs.CambiarNumberoDeSoldados(curFilesPath+"/"+nombreArchivo, cmd)
+
+		// si no existe la ciudad, retornamos nil
+		if !b || err != nil {
+			return nil
+		}
+
+		// El cambio se llevo a cabo de los Registros Planetarios. Registramos el cambio en Log
+		err = funcs.InsertarComandoEnLog(curFilesPath+"/"+nombreArchivoLog, cmd) //
+
+		if err != nil {
+			return nil
+		}
+
+		if RelojesVectoresDict[nombreArchivo] == nil {
+			RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
+				Nombre: nombreArchivo,
+				X:      0, Y: 0, Z: 0,
+			}
+		}
+
+		ModificarRelojVector(nombreArchivo)
+	} else {
+		return nil
+	}
+	return RelojesVectoresDict[nombreArchivo]
+}
 
 func ModificarRelojVector(nombreArchivo string) {
 	fmt.Printf("Nombre Archivo a Buscar: %v\n", nombreArchivo)
@@ -178,42 +247,37 @@ func ModificarRelojVector(nombreArchivo string) {
 	case 3:
 		RelojesVectoresDict[nombreArchivo].Z++
 	}
-
-}
-
-func UpdateNumber(cmd *pb.Comando) {
-
 }
 
 func main() {
 	var srvAddr string
 	if len(os.Args) == 3 {
-		if (os.Args[1] == "1") {
+		if os.Args[1] == "1" {
 			srvAddr = local + port
 			curFilesPath = curFiles + filesF1
-			FulcrumId = 1;
-		} else if (os.Args[1] == "2") {
+			FulcrumId = 1
+		} else if os.Args[1] == "2" {
 			srvAddr = local + port2
 			curFilesPath = curFiles + filesF2
-			FulcrumId = 2;
+			FulcrumId = 2
 		} else {
 			srvAddr = local + port3
 			curFilesPath = curFiles + filesF3
-			FulcrumId = 3;
+			FulcrumId = 3
 		}
 	} else {
-		if (os.Args[1] == "1") {
+		if os.Args[1] == "1" {
 			srvAddr = f1Addrs
 			curFilesPath = curFiles + filesF1
-			FulcrumId = 1;
-		} else if (os.Args[1] == "2") {
+			FulcrumId = 1
+		} else if os.Args[1] == "2" {
 			srvAddr = f2Addrs
 			curFilesPath = curFiles + filesF2
-			FulcrumId = 2;
+			FulcrumId = 2
 		} else {
 			srvAddr = f3Addrs
 			curFilesPath = curFiles + filesF3
-			FulcrumId = 3;			
+			FulcrumId = 3
 		}
 	}
 	log.Printf("Address Fulcrum: %v - Id: %v - curFilesPath: %v\n", srvAddr, FulcrumId, curFilesPath)

@@ -60,7 +60,7 @@ func ConsolaAddCity() {
 
 	coord := &pb.Ubicacion{
 		NombrePlaneta: planeta,
-		NombreCiudad: ciudad,
+		NombreCiudad:  ciudad,
 	}
 	AddCity(coord, valorInt)
 
@@ -80,16 +80,57 @@ func ConsolaUpdateName() {
 
 	coord := &pb.Ubicacion{
 		NombrePlaneta: planeta,
-		NombreCiudad: ciudad,
+		NombreCiudad:  ciudad,
 	}
 	UpdateName(coord, valorStr)
 
 	log.Println("Comando 'UpdateName' Terminado")
 }
 
+// Falta completar
+func ConsolaDeleteCity() {
+	var planeta string
+	var ciudad string
+	fmt.Print("Ingrese Nombre Planeta: ")
+	fmt.Scanln(&planeta)
+	fmt.Print("Ingrese Nombre Ciudad: ")
+	fmt.Scanln(&ciudad)
+
+	/*
+		coord := &pb.Ubicacion{
+			NombrePlaneta: planeta,
+			NombreCiudad:  ciudad,
+		}
+			DeleteCity(coord)
+	*/
+
+	log.Println("Comando 'DeleteCity' Terminado")
+
+}
+
+func ConsolaUpdateNumber() {
+	var planeta string
+	var ciudad string
+	var valorInt int64
+	fmt.Print("Ingrese Nombre Planeta: ")
+	fmt.Scanln(&planeta)
+	fmt.Print("Ingrese Nombre Ciudad: ")
+	fmt.Scanln(&ciudad)
+	fmt.Print("Ingrese Nuevo Nombre: ")
+	fmt.Scanln(&valorInt)
+
+	coord := &pb.Ubicacion{
+		NombrePlaneta: planeta,
+		NombreCiudad:  ciudad,
+	}
+	UpdateNumber(coord, valorInt)
+
+	log.Println("Comando 'UpdateName' Terminado")
+}
+
 // FUNCIONES INFORMANTE
 
-func CreateBaseComandoAndConn(tipoComando pb.TipoComando,coord *pb.Ubicacion) (*pb.Comando, *grpc.ClientConn, error) {
+func CreateBaseComandoAndConn(tipoComando pb.TipoComando, coord *pb.Ubicacion) (*pb.Comando, *grpc.ClientConn, error) {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("No se pudo conectar: %v\n", err)
@@ -110,11 +151,11 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 	cmd.NuevoValorInt = nuevo_valor
 	mc := pb.NewMosEisleyClient(conn)
 	dirFulcrum, err := Execute(mc, cmd)
-	conn.Close()	
+	conn.Close()
 	log.Println("primer 'conn' cerrado")
 
 	log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
-	if (err != nil) {
+	if err != nil {
 		log.Fatalf("Error al ejecutar el comando hacia Mos Eisley: err: %v\n", err)
 		return
 	}
@@ -143,17 +184,17 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 	log.Printf("AddCity Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
 	cambios = append(cambios, &Cambio{
 		archivo_name: rComando.RelojVec.Nombre,
-		comando: cmd,
-		reloj_vec: rComando.RelojVec,
-		fulcrum_dir: dirFulcrum,
+		comando:      cmd,
+		reloj_vec:    rComando.RelojVec,
+		fulcrum_dir:  dirFulcrum,
 	})
 
-	if (cambios == nil) {
+	if cambios == nil {
 		log.Printf("'cambios' es null")
-	} else if (len(cambios) == 0){
+	} else if len(cambios) == 0 {
 		log.Printf("Len de 'cambios' es 0")
 	} else {
-		log.Printf("AddCity Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios) - 1])
+		log.Printf("AddCity Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
 	}
 }
 
@@ -169,7 +210,6 @@ func AddCityNonVal(coord *pb.Ubicacion) {
 }
 
 func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
-
 	// Realizar RPC a Mos Eisley
 	cmd, conn, err := CreateBaseComandoAndConn(pb.TipoComando_UpdateName, coord)
 	if err != nil {
@@ -179,11 +219,11 @@ func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
 	cmd.NuevoValorStr = nuevo_valor
 	mc := pb.NewMosEisleyClient(conn)
 	dirFulcrum, err := Execute(mc, cmd)
-	conn.Close()	
+	conn.Close()
 	log.Println("primer 'conn' cerrado")
 
 	log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
-	if (err != nil) {
+	if err != nil {
 		log.Fatalf("Error al ejecutar el comando hacia Mos Eisley: err: %v\n", err)
 		return
 	}
@@ -211,20 +251,77 @@ func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
 
 	log.Printf("UpdateName Realizado. Respueta: %v\n", rComando)
 	if rComando != nil {
-		log.Printf("UpdateName Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)		
+		log.Printf("UpdateName Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
 		cambios = append(cambios, &Cambio{
 			archivo_name: rComando.RelojVec.Nombre,
-			comando: cmd,
-			reloj_vec: rComando.RelojVec,
-			fulcrum_dir: dirFulcrum,
+			comando:      cmd,
+			reloj_vec:    rComando.RelojVec,
+			fulcrum_dir:  dirFulcrum,
 		})
-		log.Printf("UpdateName Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios) - 1])
+		log.Printf("UpdateName Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
 	} else {
 		log.Printf("UpdateName Fracasado. Respuesta Nula: %v\n", rComando)
 	}
 }
 
+// -------------------Maxi porfa corrobora que está bien esto------------------------------------
 func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
+	// Realizar RPC a Mos Eisley
+	cmd, conn, err := CreateBaseComandoAndConn(pb.TipoComando_UpdateName, coord)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+	cmd.NuevoValorInt = nuevo_valor
+	mc := pb.NewMosEisleyClient(conn)
+	dirFulcrum, err := Execute(mc, cmd)
+	conn.Close()
+	log.Println("primer 'conn' cerrado")
+
+	log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
+	if err != nil {
+		log.Fatalf("Error al ejecutar el comando hacia Mos Eisley: err: %v\n", err)
+		return
+	}
+
+	log.Printf("Abriendo Sgte Conexión en dirección: %v\n", dirFulcrum)
+	connFulcrum, errFulcrum := grpc.Dial(dirFulcrum, grpc.WithInsecure(), grpc.WithBlock())
+	if errFulcrum != nil {
+		log.Fatalf("No se pudo conectar: %v\n", err)
+		return
+	}
+	defer connFulcrum.Close()
+
+	// Realizar RPC a Fulcrum
+	fc := pb.NewFulcrumClient(connFulcrum)
+
+	log.Printf("'FC' cliente creado, a realizar fc.comando")
+	rComando, errComando := fc.Comando(context.Background(), &pb.SolicitudComando{
+		Cmd: cmd,
+	})
+
+	if errComando != nil {
+		log.Fatalf("Error al realizar el comando: %v\n", errComando)
+		return
+	}
+
+	log.Printf("UpdateName Realizado. Respueta: %v\n", rComando)
+	if rComando != nil {
+		log.Printf("UpdateName Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
+		cambios = append(cambios, &Cambio{
+			archivo_name: rComando.RelojVec.Nombre,
+			comando:      cmd,
+			reloj_vec:    rComando.RelojVec,
+			fulcrum_dir:  dirFulcrum,
+		})
+		log.Printf("UpdateName Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
+	} else {
+		log.Printf("UpdateName Fracasado. Respuesta Nula: %v\n", rComando)
+	}
+}
+
+//-----------------------------Implementar------------------------------------
+func DeleteCity() {
 
 }
 
@@ -252,33 +349,40 @@ func Consola() {
 	for {
 		ShowConsola()
 
-		var option string 
+		var option string
 		fmt.Print("Ingrese Opción: ")
 		fmt.Scanln(&option)
 
 		exitBool := ConsolaProcesamiento(option)
-		if (exitBool) {
+		if exitBool {
 			break
 		}
 	}
 }
 
 func ShowConsola() {
-    fmt.Println("========== CONSOLA INFORMANTE ==========")
+	fmt.Println("========== CONSOLA INFORMANTE ==========")
 
 	// Opciones
-    fmt.Println("COMANDO 'AddCity': PRESIONAR 'A' + 'ENTER'")
+	fmt.Println("COMANDO 'AddCity': PRESIONAR 'A' + 'ENTER'")
 	fmt.Println("COMANDO 'UpdateName': PRESIONAR 'N' + 'ENTER'")
+	fmt.Println("COMANDO 'UpdateNumber': PRESIONAR 'F' + 'ENTER'")
+	fmt.Println("COMANDO 'DeleteCity': PRESIONAR 'D' + 'ENTER'")
 }
 
 func ConsolaProcesamiento(option string) bool {
 	if option == "A" || option == "a" {
 		ConsolaAddCity()
 	} else if option == "E" || option == "e" {
-		return true;
+		return true
 	} else if option == "N" || option == "n" {
 		ConsolaUpdateName()
+	} else if option == "F" || option == "f" {
+		ConsolaUpdateNumber()
+	} else if option == "D" || option == "d" {
+		ConsolaDeleteCity()
 	} else {
+
 		fmt.Printf("Option %v no válida\n", option)
 	}
 	return false
