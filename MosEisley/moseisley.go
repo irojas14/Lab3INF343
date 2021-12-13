@@ -55,6 +55,12 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 	return &pb.RespuestaComandoMosEisley{DirFulcrum: faddr,}, nil
 }
 
+func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
+	return &pb.RespuestaGetNumberRebelds{}, nil
+}
+
+// FUNCIONES AUXILIARES
+
 func EleccionFulcrum() string {
 
 	faddr := curAddrs[curElection];

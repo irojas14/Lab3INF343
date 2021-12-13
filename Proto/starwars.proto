@@ -16,13 +16,6 @@ service Fulcrum {
     rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
 }
 
-// ENUMS
-
-enum ActorType {
-    Informante = 0;
-    Leia = 1;
-}
-
 enum TipoComando {
     AddCity = 0;
     UpdateName = 1;

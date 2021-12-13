@@ -48,6 +48,7 @@ type server struct {
 func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.RespuestaComandoFulcrum, error) {
 
 	log.Printf("En Comando Fulcrum id: %v\n", FulcrumId)
+	log.Printf("Comando: %v", in.Cmd.String())
 
 	var RelojVectorRes *pb.RelojVector = nil
 
@@ -57,9 +58,12 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 	case pb.TipoComando_UpdateName:
 		RelojVectorRes = UpdateName(in.Cmd)
 	case pb.TipoComando_DeleteCity:
-		DeleteCity(in.Cmd)
+		log.Printf("En Delete City: %v\n", FulcrumId)
+		RelojVectorRes = DeleteCity(in.Cmd)
 	case pb.TipoComando_UpdateNumber:
-		UpdateNumber(in.Cmd)
+		RelojVectorRes = UpdateNumber(in.Cmd)
+	default:
+		log.Printf("Tipo de Comando No Existente: %v\n", in.Cmd.Tipo)
 	}
 	return &pb.RespuestaComandoFulcrum{RelojVec: RelojVectorRes}, nil
 }
@@ -162,7 +166,6 @@ func UpdateName(cmd *pb.Comando) *pb.RelojVector {
 	return RelojesVectoresDict[nombreArchivo]
 }
 
-// -------------------Maxi porfa corrobora que está bien esto------------------------------------
 func DeleteCity(cmd *pb.Comando) *pb.RelojVector {
 	nombreArchivo := cmd.Coord.NombrePlaneta + "_" + "Info"
 	nombreArchivoLog := cmd.Coord.NombrePlaneta + "_" + "Log"
@@ -170,11 +173,13 @@ func DeleteCity(cmd *pb.Comando) *pb.RelojVector {
 	// Vemos que el archivo existe
 	if funcs.IsInServer(nombreArchivo, curFilesPath) {
 
+		log.Printf("El archivo del planeta sí existe: Fulcrum %v - Planeta: %v\n", FulcrumId, cmd.Coord.NombrePlaneta)
 		// Si existe, vemos si existe la ciudad para actualizarla
 		b, err := funcs.BorrarCiudad(curFilesPath+"/"+nombreArchivo, cmd)
 
 		// si no existe la ciudad, retornamos nil
 		if !b || err != nil {
+			log.Printf("La ciudad no existe: %v\n", cmd.Coord.NombreCiudad)
 			return nil
 		}
 
@@ -194,6 +199,7 @@ func DeleteCity(cmd *pb.Comando) *pb.RelojVector {
 
 		ModificarRelojVector(nombreArchivo)
 	} else {
+		log.Printf("El archivo del planeta no existe: %v\n", cmd.Coord.NombrePlaneta)
 		return nil
 	}
 	return RelojesVectoresDict[nombreArchivo]

@@ -231,7 +231,8 @@ func InsertarComandoEnLog(NombreDelArchivo string, comando *pb.Comando) error {
 }
 
 func BorrarCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
-	var file, err = os.OpenFile(NombreDelArchivo, os.O_APPEND|os.O_WRONLY, 0644)
+
+	var file, err = os.OpenFile(NombreDelArchivo, os.O_RDWR, 0644)
 	file_new, err_new := os.OpenFile("temp.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return false, err
@@ -240,6 +241,8 @@ func BorrarCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
 		return false, err_new
 	}
 	defer file.Close()
+
+	cityExist := false
 	datawriter := bufio.NewWriter(file_new)
 	scanner := bufio.NewScanner(file)
 	var lines []string
@@ -251,6 +254,7 @@ func BorrarCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
 	}
 	for _, line := range lines {
 		if strings.Contains(line, comando.Coord.NombreCiudad) {
+			cityExist = true
 			continue
 		}
 		datawriter.WriteString(line + "\n")
@@ -267,10 +271,9 @@ func BorrarCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
 		return false, e
 	}
 	fix_file(NombreDelArchivo)
-	return true, nil
+	return cityExist, nil
 }
 
-// -------------------Maxi porfa corrobora que está bien esto------------------------------------
 func CambiarNumberoDeSoldados(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
 	var file, err = os.OpenFile(NombreDelArchivo, os.O_WRONLY, 0644)
 

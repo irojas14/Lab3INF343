@@ -31,7 +31,6 @@ type Cambio struct {
 }
 
 var (
-	Tipo    pb.ActorType
 	cambios []*Cambio = make([]*Cambio, 0)
 )
 
@@ -95,14 +94,13 @@ func ConsolaDeleteCity() {
 	fmt.Scanln(&planeta)
 	fmt.Print("Ingrese Nombre Ciudad: ")
 	fmt.Scanln(&ciudad)
+	
+	coord := &pb.Ubicacion{
+		NombrePlaneta: planeta,
+		NombreCiudad:  ciudad,
+	}
 
-	/*
-		coord := &pb.Ubicacion{
-			NombrePlaneta: planeta,
-			NombreCiudad:  ciudad,
-		}
-			DeleteCity(coord)
-	*/
+	DeleteCity(coord)
 
 	log.Println("Comando 'DeleteCity' Terminado")
 
@@ -116,7 +114,7 @@ func ConsolaUpdateNumber() {
 	fmt.Scanln(&planeta)
 	fmt.Print("Ingrese Nombre Ciudad: ")
 	fmt.Scanln(&ciudad)
-	fmt.Print("Ingrese Nuevo Nombre: ")
+	fmt.Print("Ingrese Nuevo Número: ")
 	fmt.Scanln(&valorInt)
 
 	coord := &pb.Ubicacion{
@@ -181,32 +179,7 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 		return
 	}
 
-	log.Printf("AddCity Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
-	cambios = append(cambios, &Cambio{
-		archivo_name: rComando.RelojVec.Nombre,
-		comando:      cmd,
-		reloj_vec:    rComando.RelojVec,
-		fulcrum_dir:  dirFulcrum,
-	})
-
-	if cambios == nil {
-		log.Printf("'cambios' es null")
-	} else if len(cambios) == 0 {
-		log.Printf("Len de 'cambios' es 0")
-	} else {
-		log.Printf("AddCity Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
-	}
-}
-
-func AddCityNonVal(coord *pb.Ubicacion) {
-	cmd, conn, err := CreateBaseComandoAndConn(pb.TipoComando_AddCity, coord)
-	if err != nil {
-		return
-	}
-	defer conn.Close()
-
-	c := pb.NewMosEisleyClient(conn)
-	Execute(c, cmd)
+	ResultadosComando(cmd, rComando, dirFulcrum)
 }
 
 func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
@@ -249,25 +222,12 @@ func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
 		return
 	}
 
-	log.Printf("UpdateName Realizado. Respueta: %v\n", rComando)
-	if rComando != nil {
-		log.Printf("UpdateName Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
-		cambios = append(cambios, &Cambio{
-			archivo_name: rComando.RelojVec.Nombre,
-			comando:      cmd,
-			reloj_vec:    rComando.RelojVec,
-			fulcrum_dir:  dirFulcrum,
-		})
-		log.Printf("UpdateName Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
-	} else {
-		log.Printf("UpdateName Fracasado. Respuesta Nula: %v\n", rComando)
-	}
+	ResultadosComando(cmd, rComando, dirFulcrum)
 }
 
-// -------------------Maxi porfa corrobora que está bien esto------------------------------------
 func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
 	// Realizar RPC a Mos Eisley
-	cmd, conn, err := CreateBaseComandoAndConn(pb.TipoComando_UpdateName, coord)
+	cmd, conn, err := CreateBaseComandoAndConn(pb.TipoComando_UpdateNumber, coord)
 	if err != nil {
 		return
 	}
@@ -305,24 +265,50 @@ func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
 		return
 	}
 
-	log.Printf("UpdateName Realizado. Respueta: %v\n", rComando)
-	if rComando != nil {
-		log.Printf("UpdateName Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
-		cambios = append(cambios, &Cambio{
-			archivo_name: rComando.RelojVec.Nombre,
-			comando:      cmd,
-			reloj_vec:    rComando.RelojVec,
-			fulcrum_dir:  dirFulcrum,
-		})
-		log.Printf("UpdateName Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
-	} else {
-		log.Printf("UpdateName Fracasado. Respuesta Nula: %v\n", rComando)
-	}
+	ResultadosComando(cmd, rComando, dirFulcrum)
 }
 
-//-----------------------------Implementar------------------------------------
-func DeleteCity() {
-
+func DeleteCity(coord *pb.Ubicacion) {
+		// Realizar RPC a Mos Eisley
+		cmd, conn, err := CreateBaseComandoAndConn(pb.TipoComando_DeleteCity, coord)
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		mc := pb.NewMosEisleyClient(conn)
+		dirFulcrum, err := Execute(mc, cmd)
+		conn.Close()
+		log.Println("primer 'conn' cerrado")
+	
+		// Realizar RPC a FULCRUM
+		log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
+		if err != nil {
+			log.Fatalf("Error al ejecutar el comando hacia Mos Eisley: err: %v\n", err)
+			return
+		}
+	
+		log.Printf("Abriendo Sgte Conexión en dirección: %v\n", dirFulcrum)
+		connFulcrum, errFulcrum := grpc.Dial(dirFulcrum, grpc.WithInsecure(), grpc.WithBlock())
+		if errFulcrum != nil {
+			log.Fatalf("No se pudo conectar: %v\n", err)
+			return
+		}
+		defer connFulcrum.Close()
+	
+		// Realizar RPC a Fulcrum
+		fc := pb.NewFulcrumClient(connFulcrum)
+	
+		log.Printf("'FC' cliente creado, a realizar fc.comando")
+		rComando, errComando := fc.Comando(context.Background(), &pb.SolicitudComando{
+			Cmd: cmd,
+		})
+	
+		if errComando != nil {
+			log.Fatalf("Error al realizar el comando: %v\n", errComando)
+			return
+		}
+	
+		ResultadosComando(cmd, rComando, dirFulcrum)
 }
 
 func Execute(c pb.MosEisleyClient, cmd *pb.Comando) (string, error) {
@@ -343,6 +329,29 @@ func CreateBaseCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
 		Nombre: funcs.CmdToStr(tipoCmd),
 		Coord:  coord,
 	}
+}
+
+func ResultadosComando(cmd *pb.Comando, rComando *pb.RespuestaComandoFulcrum, dirFulcrum string) {
+	
+	if rComando == nil || rComando.RelojVec == nil {
+		log.Printf("Respuesta Vacía. No se llevo a cabo ningún cambio")
+		return
+	}
+
+	log.Printf( cmd.Nombre + " Realizado. Respueta: %v\n", rComando)
+	if rComando != nil {
+		log.Printf( cmd.Nombre + " Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
+		cambios = append(cambios, &Cambio{
+			archivo_name: rComando.RelojVec.Nombre,
+			comando:      cmd,
+			reloj_vec:    rComando.RelojVec,
+			fulcrum_dir:  dirFulcrum,
+		})
+		log.Printf(cmd.Nombre + " Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
+	} else {
+		log.Printf(cmd.Nombre + " Fracasado. Respuesta Nula: %v\n", rComando)
+	}
+
 }
 
 func Consola() {
