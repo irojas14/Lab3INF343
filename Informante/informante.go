@@ -377,6 +377,7 @@ func ShowConsola() {
 	fmt.Println("COMANDO 'UpdateName': PRESIONAR 'N' + 'ENTER'")
 	fmt.Println("COMANDO 'UpdateNumber': PRESIONAR 'F' + 'ENTER'")
 	fmt.Println("COMANDO 'DeleteCity': PRESIONAR 'D' + 'ENTER'")
+	fmt.Println("SALIR: PRESIONAR 'E' + 'ENTER'")
 }
 
 func ConsolaProcesamiento(option string) bool {
