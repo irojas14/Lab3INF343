@@ -56,8 +56,69 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 }
 
 func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
-	return &pb.RespuestaGetNumberRebelds{}, nil
+	log.Printf("En GetNumberRebelds: Consulta coord: %v\n", in.Coord)
+
+	valores := make([]*pb.RespuestaGetNumberRebelds, 0)
+	for _, addr := range(curAddrs){
+		connFulcrum, errFulcrum := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+
+		// Nos conectamos al Fulcrum con direccion "addr"
+		if errFulcrum != nil {
+			log.Fatalf("Error al conectarse al fulcrum %v\n", addr)
+			continue;
+		}
+		defer connFulcrum.Close()
+
+		// Creamos el Cliente Fulcrum
+
+		c := pb.NewFulcrumClient(connFulcrum)
+
+		rRebelds, errRebelds := c.GetNumberRebelds(context.Background(), &pb.SolicitudGetNumberRebelds{
+			Coord : in.Coord,
+		})
+
+		if errRebelds != nil {
+			log.Fatalf("Error Solicitar Get Number Rebelds en coord: %v, en el Fulcrum %v\n", in.Coord, addr)
+			continue
+		}
+
+		if (rRebelds != nil && rRebelds.NumRebels != -3) {
+			valores = append(valores, rRebelds)
+		}
+	}
+
+	diff := false
+	if len(valores) > 0 {
+		last := valores[0].NumRebels;
+		
+		for i := 1; i < len(valores); i++ {
+			if valores[i].NumRebels != last && valores[i].NumRebels != -3 && last != -3 {
+				diff = true
+				break
+			}
+			last = valores[i].NumRebels
+		}
+
+	} else {
+		return &pb.RespuestaGetNumberRebelds{
+			NumRebels: -3,
+		}, nil
+	}
+
+	var respuestaGetRebelds *pb.RespuestaGetNumberRebelds = nil
+	if (diff) {
+		Merge()
+		respuestaGetRebelds = valores[0]
+	} else {
+		respuestaGetRebelds = valores[0]
+	}
+	return respuestaGetRebelds, nil
 }
+
+func Merge() {
+
+}
+
 
 // FUNCIONES AUXILIARES
 

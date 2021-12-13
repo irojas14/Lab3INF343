@@ -364,6 +364,43 @@ func fix_file(NombreDelArchivo string) error {
 	return nil
 }
 
+func ObtenerRebels(NombreDelArchivo string, coord *pb.Ubicacion) (int64, error) {
+	
+	var file, err = os.OpenFile(NombreDelArchivo, os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatalf("Error al abrir el archivo: %v\n", err)
+		return -1, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		return -1, err
+	}
+	
+	var numRebels int64 = -3
+	var errNumber error
+	for _, line := range lines {
+		
+		if strings.Contains(line, coord.NombreCiudad) {
+			items := strings.Split(line, " ")
+			numRebels, errNumber = strconv.ParseInt(items[2], 10, 64)
+			if errNumber != nil {
+				log.Printf("Error al convertir el número; %v\n", items[2])
+				return -2, errNumber
+			}
+			break
+		}
+	}
+	log.Printf("Número Correcto Encontrado :%v\n", numRebels)
+	return numRebels, nil
+}
+
 /*
 func BorrarCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
 

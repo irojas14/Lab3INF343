@@ -34,6 +34,7 @@ var (
 
 var (
 	FulcrumId    int
+	curAddr string
 	curFilesPath string
 )
 
@@ -44,6 +45,8 @@ var (
 type server struct {
 	pb.UnimplementedFulcrumServer
 }
+
+// METODOS REMOTOS DEL SERVICIO
 
 func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.RespuestaComandoFulcrum, error) {
 
@@ -67,6 +70,49 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 	}
 	return &pb.RespuestaComandoFulcrum{RelojVec: RelojVectorRes}, nil
 }
+
+func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
+
+	nombreArchivo := in.Coord.NombrePlaneta + "_" + "Info"
+
+	existeBool := funcs.IsInServer(nombreArchivo, curFilesPath)
+
+	if existeBool {
+		RebelNum, errObtencion := funcs.ObtenerRebels(curFilesPath + "/" + nombreArchivo, in.Coord)
+
+		if errObtencion != nil {
+			log.Printf("Ocurrió un error al buscar los rebeldes en Coord: %v y Fulcrum: %v: Error: %v - Cód: %v\n", in.Coord, FulcrumId, errObtencion, RebelNum)
+			return nil, errObtencion
+		}
+
+		if RebelNum == -3 {
+			log.Printf("No se encontró la ciudad %v en el planeta %v en el Fulcrum %v\n", in.Coord.NombreCiudad, in.Coord.NombrePlaneta, FulcrumId)
+			return &pb.RespuestaGetNumberRebelds{
+				NumRebels: -3,
+			}, nil
+		}
+
+		if RelojesVectoresDict[nombreArchivo] == nil {
+			RelojesVectoresDict[nombreArchivo] = &pb.RelojVector{
+				Nombre: nombreArchivo,
+				X : 0, Y: 0, Z: 0,
+			}
+		}
+
+		return &pb.RespuestaGetNumberRebelds{
+			ArchivoName: nombreArchivo,
+			FulcrumDir: curAddr,
+			NumRebels: RebelNum,
+			RelojVec: RelojesVectoresDict[nombreArchivo],
+		}, nil
+
+	} else {
+		log.Printf("Coord %v no presente en Fulcrum: %v\n", in.Coord, FulcrumId)
+		return nil, nil
+	}
+}
+
+// FUNCIONES AUXILIARES
 
 func AddCity(cmd *pb.Comando) *pb.RelojVector {
 	nombreArchivo := cmd.Coord.NombrePlaneta + "_" + "Info"
@@ -286,6 +332,7 @@ func main() {
 			FulcrumId = 3
 		}
 	}
+	curAddr = srvAddr
 	log.Printf("Address Fulcrum: %v - Id: %v - curFilesPath: %v\n", srvAddr, FulcrumId, curFilesPath)
 
 	lis, err := net.Listen("tcp", srvAddr)

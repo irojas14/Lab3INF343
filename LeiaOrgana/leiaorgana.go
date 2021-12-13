@@ -20,10 +20,6 @@ var (
 	cur_mos_eisley string
 )
 
-type server struct {
-	pb.UnimplementedFulcrumServer
-}
-
 type Consulta struct {
 	archivo_name string
 	coord        *pb.Ubicacion
@@ -62,16 +58,29 @@ func GetNumberRebelds(coord *pb.Ubicacion) error {
 		log.Fatalf("Error al pedir el número de rebeldes de %v %v. Error: %v\n", coord.NombrePlaneta, coord.NombreCiudad, errRebels)
 		return nil
 	}
+	if rRebelds != nil {
 
-	if (rRebelds != nil && rRebelds.RelojVec != nil) {
-	
-		consultas = append(consultas, Consulta{
-		archivo_name: rRebelds.ArchivoName,
-		coord:        coord,
-		rebel_num:    rRebelds.NumRebels,
-		reloj_vec:    rRebelds.RelojVec,
-		fulcrum_dir:  rRebelds.FulcrumDir,
-		})
+		if rRebelds.NumRebels != -3 {
+		
+			if (rRebelds.RelojVec != nil) {
+
+				consultas = append(consultas, Consulta{
+				archivo_name: rRebelds.ArchivoName,
+				coord:        coord,
+				rebel_num:    rRebelds.NumRebels,
+				reloj_vec:    rRebelds.RelojVec,
+				fulcrum_dir:  rRebelds.FulcrumDir,
+				})
+
+				log.Printf("Los Rebeldes en la ciudad de %v en el planeta %v son %v! - Reloj Vector: %v - Fulcrum: %v\n", 
+				coord.NombreCiudad, coord.NombrePlaneta, rRebelds.NumRebels, rRebelds.RelojVec, rRebelds.FulcrumDir)
+
+			} else {
+				log.Fatalf("No se encontró reloj de Vectores")	
+			}
+		} else {
+			log.Printf("No se encontró la ciudad solicitada")
+		}
 
 	} else {
 		log.Printf("La Respuesta fue vacío. No se obtuvo Información")
@@ -135,11 +144,13 @@ func ConsolaProcesamiento(option string) bool {
 }
 
 func main() {
-	if len(os.Args) == 3 {
+	if len(os.Args) == 2 {
 		cur_mos_eisley = mos_eisley_addr_local
 	} else {
 		cur_mos_eisley = mos_eisley_addr
 	}
+
+	log.Printf("Dir Mos Eisley: %v\n", cur_mos_eisley)
 
 	Consola()
 }
