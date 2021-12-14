@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type MosEisleyClient interface {
 	Comando(ctx context.Context, in *SolicitudComando, opts ...grpc.CallOption) (*RespuestaComandoMosEisley, error)
 	GetNumberRebelds(ctx context.Context, in *SolicitudGetNumberRebelds, opts ...grpc.CallOption) (*RespuestaGetNumberRebelds, error)
+	GetNumberRebeldsInformante(ctx context.Context, in *SolicitudGetNumRebelsInformante, opts ...grpc.CallOption) (*RespuestaGetNumRebelsInformante, error)
 }
 
 type mosEisleyClient struct {
@@ -48,12 +49,22 @@ func (c *mosEisleyClient) GetNumberRebelds(ctx context.Context, in *SolicitudGet
 	return out, nil
 }
 
+func (c *mosEisleyClient) GetNumberRebeldsInformante(ctx context.Context, in *SolicitudGetNumRebelsInformante, opts ...grpc.CallOption) (*RespuestaGetNumRebelsInformante, error) {
+	out := new(RespuestaGetNumRebelsInformante)
+	err := c.cc.Invoke(ctx, "/Proto.MosEisley/GetNumberRebeldsInformante", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MosEisleyServer is the server API for MosEisley service.
 // All implementations must embed UnimplementedMosEisleyServer
 // for forward compatibility
 type MosEisleyServer interface {
 	Comando(context.Context, *SolicitudComando) (*RespuestaComandoMosEisley, error)
 	GetNumberRebelds(context.Context, *SolicitudGetNumberRebelds) (*RespuestaGetNumberRebelds, error)
+	GetNumberRebeldsInformante(context.Context, *SolicitudGetNumRebelsInformante) (*RespuestaGetNumRebelsInformante, error)
 	mustEmbedUnimplementedMosEisleyServer()
 }
 
@@ -66,6 +77,9 @@ func (UnimplementedMosEisleyServer) Comando(context.Context, *SolicitudComando) 
 }
 func (UnimplementedMosEisleyServer) GetNumberRebelds(context.Context, *SolicitudGetNumberRebelds) (*RespuestaGetNumberRebelds, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNumberRebelds not implemented")
+}
+func (UnimplementedMosEisleyServer) GetNumberRebeldsInformante(context.Context, *SolicitudGetNumRebelsInformante) (*RespuestaGetNumRebelsInformante, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNumberRebeldsInformante not implemented")
 }
 func (UnimplementedMosEisleyServer) mustEmbedUnimplementedMosEisleyServer() {}
 
@@ -116,6 +130,24 @@ func _MosEisley_GetNumberRebelds_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MosEisley_GetNumberRebeldsInformante_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SolicitudGetNumRebelsInformante)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MosEisleyServer).GetNumberRebeldsInformante(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Proto.MosEisley/GetNumberRebeldsInformante",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MosEisleyServer).GetNumberRebeldsInformante(ctx, req.(*SolicitudGetNumRebelsInformante))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MosEisley_ServiceDesc is the grpc.ServiceDesc for MosEisley service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +162,10 @@ var MosEisley_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNumberRebelds",
 			Handler:    _MosEisley_GetNumberRebelds_Handler,
+		},
+		{
+			MethodName: "GetNumberRebeldsInformante",
+			Handler:    _MosEisley_GetNumberRebeldsInformante_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

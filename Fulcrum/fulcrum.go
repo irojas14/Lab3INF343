@@ -73,20 +73,21 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 
 func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
 
-	nombreArchivo := in.Coord.NombrePlaneta + "_" + "Info"
+	log.Printf("Realizando Get Number Rebelds")
+	nombreArchivo := in.Consulta.Coord.NombrePlaneta + "_" + "Info"
 
 	existeBool := funcs.IsInServer(nombreArchivo, curFilesPath)
 
 	if existeBool {
-		RebelNum, errObtencion := funcs.ObtenerRebels(curFilesPath + "/" + nombreArchivo, in.Coord)
+		RebelNum, errObtencion := funcs.ObtenerRebels(curFilesPath + "/" + nombreArchivo, in.Consulta.Coord)
 
 		if errObtencion != nil {
-			log.Printf("Ocurrió un error al buscar los rebeldes en Coord: %v y Fulcrum: %v: Error: %v - Cód: %v\n", in.Coord, FulcrumId, errObtencion, RebelNum)
+			log.Printf("Ocurrió un error al buscar los rebeldes en Coord: %v y Fulcrum: %v: Error: %v - Cód: %v\n", in.Consulta.Coord, FulcrumId, errObtencion, RebelNum)
 			return nil, errObtencion
 		}
 
 		if RebelNum == -3 {
-			log.Printf("No se encontró la ciudad %v en el planeta %v en el Fulcrum %v\n", in.Coord.NombreCiudad, in.Coord.NombrePlaneta, FulcrumId)
+			log.Printf("No se encontró la ciudad %v en el planeta %v en el Fulcrum %v\n", in.Consulta.Coord.NombreCiudad, in.Consulta.Coord.NombrePlaneta, FulcrumId)
 			return &pb.RespuestaGetNumberRebelds{
 				NumRebels: -3,
 			}, nil
@@ -107,7 +108,7 @@ func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumber
 		}, nil
 
 	} else {
-		log.Printf("Coord %v no presente en Fulcrum: %v\n", in.Coord, FulcrumId)
+		log.Printf("Coord %v no presente en Fulcrum: %v\n", in.Consulta.Coord, FulcrumId)
 		return nil, nil
 	}
 }

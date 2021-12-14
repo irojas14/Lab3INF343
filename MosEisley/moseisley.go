@@ -55,9 +55,110 @@ func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.Resp
 	return &pb.RespuestaComandoMosEisley{DirFulcrum: faddr,}, nil
 }
 
-func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
-	log.Printf("En GetNumberRebelds: Consulta coord: %v\n", in.Coord)
 
+
+
+func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
+	log.Printf("En GetNumberRebelds: Consulta coord: %v\n", in.Consulta.Coord)	
+
+	// Preguntamos y Definimos la direccion Fulcrum
+	addr := EleccionFulcrum()
+	if (in.Consulta.RelojVec != nil || in.Consulta.FulcrumDir != "") {
+		addr = in.Consulta.FulcrumDir
+	}
+
+	// Realizamos la Consulta
+	r, err := ConsultaDelVivo(addr, in.Consulta)
+
+	
+	// Retornamos los resutlados
+	if (err != nil) {
+		log.Fatalf("Error al Consultar Vivamente los Rebels en %v desde el Fulcrum %v\n", in.Consulta.Coord, addr)
+	}
+
+	return r, err
+}
+
+func (s *server) GetNumberRebeldsInformante(ctx context.Context, in *pb.SolicitudGetNumRebelsInformante) (*pb.RespuestaGetNumRebelsInformante, error) {
+
+	log.Printf("En Get Number Rebelds Informante: In: %v\n", in)
+	
+	addr := EleccionFulcrum()
+	if in.Cambio.FulcrumDir != "" {
+		addr = in.Cambio.FulcrumDir
+	}
+
+	log.Printf("Addrs final: %v\n", addr)
+
+	consulta := &pb.Consulta{
+		ArchivoName: in.Cambio.ArchivoName,
+		Coord: in.Cambio.Cmd.Coord,
+		RelojVec: in.Cambio.RelojVec,
+		FulcrumDir: addr,
+	}
+
+	// Realizamos la Consulta
+	var r *pb.RespuestaGetNumRebelsInformante = nil
+	rConsulta, errConsulta := ConsultaDelVivo(addr, consulta)
+
+	log.Printf("rConsulta Recibida: %v\n", rConsulta)
+
+	if errConsulta != nil {
+		log.Fatalf("Ocurrió un error al querer confirmar el read de %v en el fulcrum %v\n", in.Cambio.Cmd.Coord, in.Cambio.FulcrumDir)
+		return nil, errConsulta
+	}
+
+	if rConsulta != nil {
+		log.Printf("Traduciendo Consulta a versión de Informante")
+		r = &pb.RespuestaGetNumRebelsInformante{
+			ArchivoName: rConsulta.ArchivoName,
+			FulcrumDir: rConsulta.FulcrumDir,
+			NumRebels: rConsulta.NumRebels,
+			RelojVec: rConsulta.RelojVec,
+			Cmd: in.Cambio.Cmd,
+		}
+	}
+	return r, nil
+}
+
+func Merge() {
+
+}
+
+func ConsultaDelVivo(addr string, consulta *pb.Consulta) (*pb.RespuestaGetNumberRebelds, error) {
+	connFulcrum, errFulcrum := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+
+	// CONEXION
+	// Nos conectamos al Fulcrum con direccion "addr"
+	if errFulcrum != nil {
+		log.Fatalf("Error al conectarse al fulcrum %v\n", addr)
+		return nil, errFulcrum
+	}
+	defer connFulcrum.Close()
+
+	// Creamos el Cliente Fulcrum
+
+	c := pb.NewFulcrumClient(connFulcrum)
+
+	rRebelds, errRebelds := c.GetNumberRebelds(context.Background(), &pb.SolicitudGetNumberRebelds{
+		Consulta: consulta,
+	})
+
+	if errRebelds != nil {
+		log.Fatalf("Error Solicitar Get Number Rebelds en coord: %v, en el Fulcrum %v\n", consulta.Coord, addr)
+		return nil, errRebelds
+	}
+
+	if (rRebelds == nil) {
+		log.Fatalf("No Existe el Planeta %v en el Fulcrum %v\n", consulta.Coord.NombrePlaneta, addr)
+	}
+
+	return rRebelds, nil
+}
+
+
+
+func ConsultaDelNoVivo(in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
 	valores := make([]*pb.RespuestaGetNumberRebelds, 0)
 	for _, addr := range(curAddrs){
 		connFulcrum, errFulcrum := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
@@ -74,11 +175,11 @@ func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumber
 		c := pb.NewFulcrumClient(connFulcrum)
 
 		rRebelds, errRebelds := c.GetNumberRebelds(context.Background(), &pb.SolicitudGetNumberRebelds{
-			Coord : in.Coord,
+			Consulta : in.Consulta,
 		})
 
 		if errRebelds != nil {
-			log.Fatalf("Error Solicitar Get Number Rebelds en coord: %v, en el Fulcrum %v\n", in.Coord, addr)
+			log.Fatalf("Error Solicitar Get Number Rebelds en coord: %v, en el Fulcrum %v\n", in.Consulta.Coord, addr)
 			continue
 		}
 
@@ -114,11 +215,6 @@ func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumber
 	}
 	return respuestaGetRebelds, nil
 }
-
-func Merge() {
-
-}
-
 
 // FUNCIONES AUXILIARES
 

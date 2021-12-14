@@ -9,11 +9,12 @@ package Proto;
 service MosEisley {
     rpc Comando (SolicitudComando) returns (RespuestaComandoMosEisley);
     rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
+    rpc GetNumberRebeldsInformante (SolicitudGetNumRebelsInformante) returns (RespuestaGetNumRebelsInformante);
 }
 
 service Fulcrum {
     rpc Comando (SolicitudComando) returns (RespuestaComandoFulcrum);
-    rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);
+    rpc GetNumberRebelds (SolicitudGetNumberRebelds) returns (RespuestaGetNumberRebelds);   
 }
 
 enum TipoComando {
@@ -39,8 +40,20 @@ message RespuestaComandoFulcrum {
     RelojVector reloj_vec = 1;
 }
 
+message SolicitudGetNumRebelsInformante {
+    Cambio cambio = 1;
+}
+
+message RespuestaGetNumRebelsInformante {
+    string archivo_name = 1;
+    string fulcrum_dir = 2;
+    int64 num_rebels = 3;
+    RelojVector reloj_vec = 4;
+    Comando cmd = 5;
+}
+
 message SolicitudGetNumberRebelds {
-    Ubicacion coord = 1;
+    Consulta consulta = 1;
 }
 
 message RespuestaGetNumberRebelds {
@@ -51,6 +64,7 @@ message RespuestaGetNumberRebelds {
 }
 
 // ESTRUCTURAS
+
 
 message Comando {
     TipoComando tipo = 1;
@@ -70,4 +84,23 @@ message RelojVector {
 message Ubicacion {
     string nombre_planeta = 1;
     string nombre_ciudad = 2;
+}
+
+// Struct de Leia
+
+message Consulta {
+    string archivo_name = 1;
+    Ubicacion coord = 2;
+    int64 rebel_num = 3;
+    RelojVector reloj_vec = 4;
+    string fulcrum_dir = 5;
+}
+
+// Struct de Informantes
+
+message Cambio {
+	string archivo_name  = 1;
+	Comando cmd = 2;
+	RelojVector reloj_vec = 3;
+	string fulcrum_dir  = 4;
 }

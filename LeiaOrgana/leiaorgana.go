@@ -20,16 +20,8 @@ var (
 	cur_mos_eisley string
 )
 
-type Consulta struct {
-	archivo_name string
-	coord        *pb.Ubicacion
-	rebel_num    int64
-	reloj_vec    *pb.RelojVector
-	fulcrum_dir  string
-}
-
 var (
-	consultas []Consulta
+	consultas []*pb.Consulta
 )
 
 // FUNCION LEIA
@@ -50,26 +42,26 @@ func GetNumberRebelds(coord *pb.Ubicacion) error {
 	c := pb.NewMosEisleyClient(connMos);
 
 	// Realizamos el llamado remoto
-	rRebelds, errRebels := c.GetNumberRebelds(context.Background(), &pb.SolicitudGetNumberRebelds{
-		Coord: coord,
-	})
+	solicitud := CrearSolicitudRebels(coord)
+	rRebelds, errRebels := c.GetNumberRebelds(context.Background(), solicitud)
 
 	if (errRebels != nil) {
 		log.Fatalf("Error al pedir el número de rebeldes de %v %v. Error: %v\n", coord.NombrePlaneta, coord.NombreCiudad, errRebels)
 		return nil
 	}
+
 	if rRebelds != nil {
 
 		if rRebelds.NumRebels != -3 {
 		
 			if (rRebelds.RelojVec != nil) {
 
-				consultas = append(consultas, Consulta{
-				archivo_name: rRebelds.ArchivoName,
-				coord:        coord,
-				rebel_num:    rRebelds.NumRebels,
-				reloj_vec:    rRebelds.RelojVec,
-				fulcrum_dir:  rRebelds.FulcrumDir,
+				consultas = append(consultas, &pb.Consulta{
+				ArchivoName: rRebelds.ArchivoName,
+				Coord:        coord,
+				RebelNum:    rRebelds.NumRebels,
+				RelojVec:    rRebelds.RelojVec,
+				FulcrumDir:  rRebelds.FulcrumDir,
 				})
 
 				log.Printf("Los Rebeldes en la ciudad de %v en el planeta %v son %v! - Reloj Vector: %v - Fulcrum: %v\n", 
@@ -83,7 +75,7 @@ func GetNumberRebelds(coord *pb.Ubicacion) error {
 		}
 
 	} else {
-		log.Printf("La Respuesta fue vacío. No se obtuvo Información")
+		log.Printf("La Respuesta fue vacío. No se obtuvo Información sobre el planeta %v\n", solicitud.Consulta.Coord.NombrePlaneta)
 	}
 	return nil
 }
@@ -153,4 +145,31 @@ func main() {
 	log.Printf("Dir Mos Eisley: %v\n", cur_mos_eisley)
 
 	Consola()
+}
+
+func CrearSolicitudRebels(coord *pb.Ubicacion) *pb.SolicitudGetNumberRebelds {
+
+	// Solicitud Base
+	var solicitud *pb.SolicitudGetNumberRebelds = nil
+
+	consultaExist := false
+	for i := len(consultas) - 1; i >= 0; i-- {
+		consulta := consultas[i]
+		if consulta.Coord.NombrePlaneta == coord.NombrePlaneta && consulta.Coord.NombreCiudad == coord.NombreCiudad {
+			solicitud = &pb.SolicitudGetNumberRebelds{
+				Consulta: consultas[i],
+			}			
+			consultaExist = true
+			break
+		}
+	}
+
+	if (!consultaExist) {
+		solicitud = &pb.SolicitudGetNumberRebelds{
+			Consulta: &pb.Consulta{
+				Coord: coord,
+			},
+		}
+	}
+	return solicitud
 }

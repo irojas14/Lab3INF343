@@ -14,7 +14,7 @@ import (
 const (
 	mos_port = ":50054"
 	local    = "localhost" + mos_port
-	mos_addr = "dist149.inf.santiago.usm.cl" + mos_port
+	mos_addr = "dist150.inf.santiago.usm.cl" + mos_port //Ver si esto es correcto
 )
 
 var (
@@ -22,16 +22,8 @@ var (
 )
 
 // Variables de los Informantes
-
-type Cambio struct {
-	archivo_name string
-	comando      *pb.Comando
-	reloj_vec    *pb.RelojVector
-	fulcrum_dir  string
-}
-
 var (
-	cambios []*Cambio = make([]*Cambio, 0)
+	cambios []*pb.Cambio = make([]*pb.Cambio, 0)
 )
 
 func main() {
@@ -124,6 +116,24 @@ func ConsolaUpdateNumber() {
 	UpdateNumber(coord, valorInt)
 
 	log.Println("Comando 'UpdateName' Terminado")
+}
+
+func ConsolaGetNumRebels() {
+	var planeta string
+	var ciudad string
+	fmt.Print("Ingrese Nombre Planeta: ")
+	fmt.Scanln(&planeta)
+	fmt.Print("Ingrese Nombre Ciudad: ")
+	fmt.Scanln(&ciudad)
+
+	coord := &pb.Ubicacion{
+		NombrePlaneta: planeta,
+		NombreCiudad:  ciudad,
+	}
+
+	GetNumberRebels(coord)
+
+	log.Println("Comando 'Get Num Rebels' Terminado")
 }
 
 // FUNCIONES INFORMANTE
@@ -341,17 +351,52 @@ func ResultadosComando(cmd *pb.Comando, rComando *pb.RespuestaComandoFulcrum, di
 	log.Printf( cmd.Nombre + " Realizado. Respueta: %v\n", rComando)
 	if rComando != nil {
 		log.Printf( cmd.Nombre + " Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
-		cambios = append(cambios, &Cambio{
-			archivo_name: rComando.RelojVec.Nombre,
-			comando:      cmd,
-			reloj_vec:    rComando.RelojVec,
-			fulcrum_dir:  dirFulcrum,
+		cambios = append(cambios, &pb.Cambio{
+			ArchivoName: rComando.RelojVec.Nombre,
+			Cmd:      cmd,
+			RelojVec:    rComando.RelojVec,
+			FulcrumDir:  dirFulcrum,
 		})
 		log.Printf(cmd.Nombre + " Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
 	} else {
 		log.Printf(cmd.Nombre + " Fracasado. Respuesta Nula: %v\n", rComando)
 	}
+}
 
+func GetNumberRebels(coord *pb.Ubicacion) {
+
+	cambio := &pb.Cambio{
+		Cmd: &pb.Comando{
+			Coord: coord,
+		},
+	}
+	for i := len(cambios) - 1; i >= 0; i-- {
+		cm := cambios[i]
+		if cm.Cmd.Coord.NombrePlaneta == coord.NombrePlaneta && cm.Cmd.Coord.NombreCiudad == coord.NombreCiudad {
+			cambio = cambios[i]
+			break
+		}
+	}
+
+	conn, errConn := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+
+	if errConn != nil {
+		log.Fatalf("Error al conectarse para realizar un GetNumberRebel: Error: %v\n", errConn)
+		return
+	}
+	defer conn.Close()
+
+	c := pb.NewMosEisleyClient(conn)
+
+	r, errSol := c.GetNumberRebeldsInformante(context.Background(), &pb.SolicitudGetNumRebelsInformante{
+		Cambio: cambio,
+	})
+
+	if errSol != nil {
+		log.Fatalf("Error al realizar un GetNumberRebel: Error: %v\n", errSol)
+		return		
+	}
+	fmt.Printf("Resultado Obtenido: %v\n", r)
 }
 
 func Consola() {
@@ -377,6 +422,7 @@ func ShowConsola() {
 	fmt.Println("COMANDO 'UpdateName': PRESIONAR 'N' + 'ENTER'")
 	fmt.Println("COMANDO 'UpdateNumber': PRESIONAR 'F' + 'ENTER'")
 	fmt.Println("COMANDO 'DeleteCity': PRESIONAR 'D' + 'ENTER'")
+	fmt.Println("PREGUNTAR Por Rebeldes: PRESIONAR 'p' + 'ENTER")
 	fmt.Println("SALIR: PRESIONAR 'E' + 'ENTER'")
 }
 
@@ -391,8 +437,9 @@ func ConsolaProcesamiento(option string) bool {
 		ConsolaUpdateNumber()
 	} else if option == "D" || option == "d" {
 		ConsolaDeleteCity()
-	} else {
-
+	} else if option == "P" || option == "p" {
+		ConsolaGetNumRebels()
+	}else {
 		fmt.Printf("Option %v no válida\n", option)
 	}
 	return false
