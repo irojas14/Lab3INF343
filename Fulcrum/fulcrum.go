@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	port    = ":50055"
+	port    = ":50500"
 	port2   = ":50501"
 	port3   = ":50502"
 	local   = "localhost"

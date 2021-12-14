@@ -17,7 +17,7 @@ const (
 )
 
 const (
-	Port    = ":50055"
+	Port    = ":50500"
 	f1Addrs = "dist149.inf.santiago.usm.cl" + Port
 	f2Addrs = "dist151.inf.santiago.usm.cl" + Port
 	f3Addrs = "dist152.inf.santiago.usm.cl" + Port
