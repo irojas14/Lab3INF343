@@ -57,3 +57,7 @@
     4.1. A + enter = Obtener número de rebeldes (se ocupa monotonic-reads) -> Ingresar nombre de planeta, ingresar nombre de ciudad.
     4.2. E + enter = Salir.
 5. Si se quiere detener a Fulcrum y MosEisley se debe hacer de forma manual.
+
+## Observación:
+
+En las carpetas Fulcrum/X, existen archivos dummy.txt, se deben ignorar estos archivos, ya que fueron creados para poder pushear carpetas vacías a git. De todas  formas pueden ser borradas después de aplicar make clean.
