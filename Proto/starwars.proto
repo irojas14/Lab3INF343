@@ -45,11 +45,8 @@ message SolicitudGetNumRebelsInformante {
 }
 
 message RespuestaGetNumRebelsInformante {
-    string archivo_name = 1;
-    string fulcrum_dir = 2;
-    int64 num_rebels = 3;
-    RelojVector reloj_vec = 4;
-    Comando cmd = 5;
+    Cambio cambio = 1;
+    int64 num_rebels = 2;
 }
 
 message SolicitudGetNumberRebelds {
@@ -57,10 +54,7 @@ message SolicitudGetNumberRebelds {
 }
 
 message RespuestaGetNumberRebelds {
-    string archivo_name = 1;
-    string fulcrum_dir = 2;
-    int64 num_rebels = 3;
-    RelojVector reloj_vec = 4;
+    Consulta consulta = 1;
 }
 
 // ESTRUCTURAS
@@ -91,7 +85,7 @@ message Ubicacion {
 message Consulta {
     string archivo_name = 1;
     Ubicacion coord = 2;
-    int64 rebel_num = 3;
+    int64 num_rebels = 3;
     RelojVector reloj_vec = 4;
     string fulcrum_dir = 5;
 }

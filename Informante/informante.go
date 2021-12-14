@@ -27,8 +27,6 @@ var (
 )
 
 func main() {
-
-	fmt.Print("INFORMANTE INICIADO")
 	addr = mos_addr
 	if len(os.Args) == 2 {
 		addr = local
@@ -160,7 +158,6 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 	mc := pb.NewMosEisleyClient(conn)
 	dirFulcrum, err := Execute(mc, cmd)
 	conn.Close()
-	log.Println("primer 'conn' cerrado")
 
 	log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
 	if err != nil {
@@ -169,7 +166,7 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 	}
 
 	// Realizar RPC a Fulcrum
-	log.Printf("Abriendo Sgte Conexión en dirección: %v\n", dirFulcrum)
+	log.Printf("Abriendo la conexión al Fulcrum en dirección: %v\n", dirFulcrum)
 	connFulcrum, errFulcrum := grpc.Dial(dirFulcrum, grpc.WithInsecure(), grpc.WithBlock())
 	if errFulcrum != nil {
 		log.Fatalf("No se pudo conectar: %v\n", err)
@@ -179,7 +176,6 @@ func AddCity(coord *pb.Ubicacion, nuevo_valor int64) {
 
 	fc := pb.NewFulcrumClient(connFulcrum)
 
-	log.Printf("'FC' cliente creado, a realizar fc.comando")
 	rComando, errComando := fc.Comando(context.Background(), &pb.SolicitudComando{
 		Cmd: cmd,
 	})
@@ -203,7 +199,6 @@ func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
 	mc := pb.NewMosEisleyClient(conn)
 	dirFulcrum, err := Execute(mc, cmd)
 	conn.Close()
-	log.Println("primer 'conn' cerrado")
 
 	log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
 	if err != nil {
@@ -211,7 +206,7 @@ func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
 		return
 	}
 
-	log.Printf("Abriendo Sgte Conexión en dirección: %v\n", dirFulcrum)
+	log.Printf("Abriendo la conexión al Fulcrum en dirección: %v\n", dirFulcrum)
 	connFulcrum, errFulcrum := grpc.Dial(dirFulcrum, grpc.WithInsecure(), grpc.WithBlock())
 	if errFulcrum != nil {
 		log.Fatalf("No se pudo conectar: %v\n", err)
@@ -222,7 +217,6 @@ func UpdateName(coord *pb.Ubicacion, nuevo_valor string) {
 	// Realizar RPC a Fulcrum
 	fc := pb.NewFulcrumClient(connFulcrum)
 
-	log.Printf("'FC' cliente creado, a realizar fc.comando")
 	rComando, errComando := fc.Comando(context.Background(), &pb.SolicitudComando{
 		Cmd: cmd,
 	})
@@ -246,7 +240,6 @@ func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
 	mc := pb.NewMosEisleyClient(conn)
 	dirFulcrum, err := Execute(mc, cmd)
 	conn.Close()
-	log.Println("primer 'conn' cerrado")
 
 	log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
 	if err != nil {
@@ -254,7 +247,7 @@ func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
 		return
 	}
 
-	log.Printf("Abriendo Sgte Conexión en dirección: %v\n", dirFulcrum)
+	log.Printf("Abriendo la conexión al Fulcrum en dirección: %v\n", dirFulcrum)
 	connFulcrum, errFulcrum := grpc.Dial(dirFulcrum, grpc.WithInsecure(), grpc.WithBlock())
 	if errFulcrum != nil {
 		log.Fatalf("No se pudo conectar: %v\n", err)
@@ -265,7 +258,6 @@ func UpdateNumber(coord *pb.Ubicacion, nuevo_valor int64) {
 	// Realizar RPC a Fulcrum
 	fc := pb.NewFulcrumClient(connFulcrum)
 
-	log.Printf("'FC' cliente creado, a realizar fc.comando")
 	rComando, errComando := fc.Comando(context.Background(), &pb.SolicitudComando{
 		Cmd: cmd,
 	})
@@ -288,7 +280,6 @@ func DeleteCity(coord *pb.Ubicacion) {
 		mc := pb.NewMosEisleyClient(conn)
 		dirFulcrum, err := Execute(mc, cmd)
 		conn.Close()
-		log.Println("primer 'conn' cerrado")
 	
 		// Realizar RPC a FULCRUM
 		log.Printf("Dirección Fulcrum Recibida: dir: %v\n", dirFulcrum)
@@ -297,7 +288,7 @@ func DeleteCity(coord *pb.Ubicacion) {
 			return
 		}
 	
-		log.Printf("Abriendo Sgte Conexión en dirección: %v\n", dirFulcrum)
+		log.Printf("Abriendo la conexión al Fulcrum en dirección: %v\n", dirFulcrum)
 		connFulcrum, errFulcrum := grpc.Dial(dirFulcrum, grpc.WithInsecure(), grpc.WithBlock())
 		if errFulcrum != nil {
 			log.Fatalf("No se pudo conectar: %v\n", err)
@@ -308,7 +299,6 @@ func DeleteCity(coord *pb.Ubicacion) {
 		// Realizar RPC a Fulcrum
 		fc := pb.NewFulcrumClient(connFulcrum)
 	
-		log.Printf("'FC' cliente creado, a realizar fc.comando")
 		rComando, errComando := fc.Comando(context.Background(), &pb.SolicitudComando{
 			Cmd: cmd,
 		})
@@ -329,7 +319,6 @@ func Execute(c pb.MosEisleyClient, cmd *pb.Comando) (string, error) {
 		log.Fatalf("Error al realizar el comando: %v\n", err)
 		return "", err
 	}
-	log.Printf("Results: %v\n", r)
 	return r.DirFulcrum, nil
 }
 
@@ -347,19 +336,18 @@ func ResultadosComando(cmd *pb.Comando, rComando *pb.RespuestaComandoFulcrum, di
 		log.Printf("Respuesta Vacía. No se llevo a cabo ningún cambio")
 		return
 	}
-
-	log.Printf( cmd.Nombre + " Realizado. Respueta: %v\n", rComando)
 	if rComando != nil {
-		log.Printf( cmd.Nombre + " Realizado. Agregando al arreglo de Cambios: Respueta: %v\n", rComando)
+
 		cambios = append(cambios, &pb.Cambio{
 			ArchivoName: rComando.RelojVec.Nombre,
 			Cmd:      cmd,
 			RelojVec:    rComando.RelojVec,
 			FulcrumDir:  dirFulcrum,
 		})
-		log.Printf(cmd.Nombre + " Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
+
+		fmt.Printf(cmd.Nombre + " Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
 	} else {
-		log.Printf(cmd.Nombre + " Fracasado. Respuesta Nula: %v\n", rComando)
+		fmt.Printf(cmd.Nombre + " Fracasado. Respuesta Nula: %v\n", rComando)
 	}
 }
 
@@ -393,10 +381,15 @@ func GetNumberRebels(coord *pb.Ubicacion) {
 	})
 
 	if errSol != nil {
-		log.Fatalf("Error al realizar un GetNumberRebel: Error: %v\n", errSol)
+		log.Printf("Error al realizar un GetNumberRebel: Error: %v\n", errSol)
 		return		
 	}
-	fmt.Printf("Resultado Obtenido: %v\n", r)
+
+	if (r.NumRebels == -3) {
+		fmt.Printf("Ciudad %v no encontrada en el planeta %v\n", r.Cambio.Cmd.Coord.NombreCiudad, r.Cambio.Cmd.Coord.NombrePlaneta)
+		return
+	}
+	fmt.Printf("Los Rebeldes %v, %v son %v\n", r.Cambio.Cmd.Coord.NombreCiudad, r.Cambio.Cmd.Coord.NombrePlaneta, r.NumRebels)
 }
 
 func Consola() {

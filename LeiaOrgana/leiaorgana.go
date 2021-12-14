@@ -52,20 +52,25 @@ func GetNumberRebelds(coord *pb.Ubicacion) error {
 
 	if rRebelds != nil {
 
-		if rRebelds.NumRebels != -3 {
+		if rRebelds.Consulta.NumRebels != -3 {
 		
-			if (rRebelds.RelojVec != nil) {
+			if (rRebelds.Consulta.RelojVec != nil) {
+				rRebelds.Consulta.Coord = coord;
 
-				consultas = append(consultas, &pb.Consulta{
-				ArchivoName: rRebelds.ArchivoName,
-				Coord:        coord,
-				RebelNum:    rRebelds.NumRebels,
-				RelojVec:    rRebelds.RelojVec,
-				FulcrumDir:  rRebelds.FulcrumDir,
-				})
+				conExist := false
+				for i, con := range(consultas) {
+
+					if con.Coord.NombrePlaneta == rRebelds.Consulta.Coord.NombrePlaneta && con.Coord.NombreCiudad == rRebelds.Consulta.Coord.NombreCiudad {
+						consultas[i] = rRebelds.Consulta
+						conExist = true
+					}
+				}
+				if (!conExist) {
+					consultas = append(consultas,  rRebelds.Consulta)
+				}
 
 				log.Printf("Los Rebeldes en la ciudad de %v en el planeta %v son %v! - Reloj Vector: %v - Fulcrum: %v\n", 
-				coord.NombreCiudad, coord.NombrePlaneta, rRebelds.NumRebels, rRebelds.RelojVec, rRebelds.FulcrumDir)
+				coord.NombreCiudad, coord.NombrePlaneta, rRebelds.Consulta.NumRebels, rRebelds.Consulta.RelojVec, rRebelds.Consulta.FulcrumDir)
 
 			} else {
 				log.Fatalf("No se encontró reloj de Vectores")	
@@ -81,6 +86,7 @@ func GetNumberRebelds(coord *pb.Ubicacion) error {
 }
 
 // FUNCIONES CONSOLA
+
 func ConsolaGetNumberRebelds() {
 	var planeta string
 	var ciudad string
@@ -141,9 +147,6 @@ func main() {
 	} else {
 		cur_mos_eisley = mos_eisley_addr
 	}
-
-	log.Printf("Dir Mos Eisley: %v\n", cur_mos_eisley)
-
 	Consola()
 }
 
@@ -154,11 +157,13 @@ func CrearSolicitudRebels(coord *pb.Ubicacion) *pb.SolicitudGetNumberRebelds {
 
 	consultaExist := false
 	for i := len(consultas) - 1; i >= 0; i-- {
+
 		consulta := consultas[i]
+		
 		if consulta.Coord.NombrePlaneta == coord.NombrePlaneta && consulta.Coord.NombreCiudad == coord.NombreCiudad {
 			solicitud = &pb.SolicitudGetNumberRebelds{
 				Consulta: consultas[i],
-			}			
+			}
 			consultaExist = true
 			break
 		}

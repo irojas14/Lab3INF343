@@ -62,9 +62,11 @@ func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumber
 	log.Printf("En GetNumberRebelds: Consulta coord: %v\n", in.Consulta.Coord)	
 
 	// Preguntamos y Definimos la direccion Fulcrum
-	addr := EleccionFulcrum()
+	var addr string
 	if (in.Consulta.RelojVec != nil || in.Consulta.FulcrumDir != "") {
 		addr = in.Consulta.FulcrumDir
+	} else {
+		addr = EleccionFulcrum()
 	}
 
 	// Realizamos la Consulta
@@ -83,9 +85,11 @@ func (s *server) GetNumberRebeldsInformante(ctx context.Context, in *pb.Solicitu
 
 	log.Printf("En Get Number Rebelds Informante: In: %v\n", in)
 	
-	addr := EleccionFulcrum()
+	var addr string
 	if in.Cambio.FulcrumDir != "" {
 		addr = in.Cambio.FulcrumDir
+	} else {
+		addr = EleccionFulcrum()
 	}
 
 	log.Printf("Addrs final: %v\n", addr)
@@ -111,18 +115,16 @@ func (s *server) GetNumberRebeldsInformante(ctx context.Context, in *pb.Solicitu
 	if rConsulta != nil {
 		log.Printf("Traduciendo Consulta a versión de Informante")
 		r = &pb.RespuestaGetNumRebelsInformante{
-			ArchivoName: rConsulta.ArchivoName,
-			FulcrumDir: rConsulta.FulcrumDir,
-			NumRebels: rConsulta.NumRebels,
-			RelojVec: rConsulta.RelojVec,
-			Cmd: in.Cambio.Cmd,
+			Cambio: &pb.Cambio{
+				ArchivoName: rConsulta.Consulta.ArchivoName,
+				FulcrumDir: rConsulta.Consulta.FulcrumDir,
+				RelojVec: rConsulta.Consulta.RelojVec,
+				Cmd: in.Cambio.Cmd,
+			},
+			NumRebels: rConsulta.Consulta.NumRebels,
 		}
 	}
 	return r, nil
-}
-
-func Merge() {
-
 }
 
 func ConsultaDelVivo(addr string, consulta *pb.Consulta) (*pb.RespuestaGetNumberRebelds, error) {
@@ -156,64 +158,77 @@ func ConsultaDelVivo(addr string, consulta *pb.Consulta) (*pb.RespuestaGetNumber
 	return rRebelds, nil
 }
 
-
-
 func ConsultaDelNoVivo(in *pb.SolicitudGetNumberRebelds) (*pb.RespuestaGetNumberRebelds, error) {
 	valores := make([]*pb.RespuestaGetNumberRebelds, 0)
-	for _, addr := range(curAddrs){
+	
+	for _, addr := range(curAddrs) {
+		
+		// Creamos la conexion
+
 		connFulcrum, errFulcrum := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
 
 		// Nos conectamos al Fulcrum con direccion "addr"
+
 		if errFulcrum != nil {
 			log.Fatalf("Error al conectarse al fulcrum %v\n", addr)
+			connFulcrum.Close()
 			continue;
 		}
 		defer connFulcrum.Close()
 
+
 		// Creamos el Cliente Fulcrum
 
 		c := pb.NewFulcrumClient(connFulcrum)
+
+		// Realizamos el llamdo remoto a Fulcrum
 
 		rRebelds, errRebelds := c.GetNumberRebelds(context.Background(), &pb.SolicitudGetNumberRebelds{
 			Consulta : in.Consulta,
 		})
 
 		if errRebelds != nil {
-			log.Fatalf("Error Solicitar Get Number Rebelds en coord: %v, en el Fulcrum %v\n", in.Consulta.Coord, addr)
+			log.Printf("Error Solicitar Get Number Rebelds en coord: %v, en el Fulcrum %v\n", in.Consulta.Coord, addr)
 			continue
 		}
 
-		if (rRebelds != nil && rRebelds.NumRebels != -3) {
+		if rRebelds.Consulta == nil {
+			log.Printf("Planeta %v no presente en el Fulcrum %v\n", in.Consulta.Coord.NombrePlaneta, addr)
+			continue
+		}
+
+		if (rRebelds != nil && rRebelds.Consulta.NumRebels != -3) {
 			valores = append(valores, rRebelds)
 		}
 	}
 
-	diff := false
-	if len(valores) > 0 {
-		last := valores[0].NumRebels;
-		
-		for i := 1; i < len(valores); i++ {
-			if valores[i].NumRebels != last && valores[i].NumRebels != -3 && last != -3 {
-				diff = true
-				break
+	val_len := len(valores)
+	if val_len > 0 {
+
+		max := &pb.RespuestaGetNumberRebelds{
+			Consulta: &pb.Consulta{
+				RelojVec: &pb.RelojVector{X:-1, Y:-1, Z:-1,},
+				},
 			}
-			last = valores[i].NumRebels
+
+		for i := 0; i < val_len; i++ {
+			if RelojVecComparison(valores[i], max) == 0 {
+				max = valores[i]
+			}
 		}
 
+		log.Printf("Respuesta Elegida: %v con vector %v\n", max, max.Consulta.RelojVec)
+		
+		return max, nil
+
 	} else {
+
 		return &pb.RespuestaGetNumberRebelds{
-			NumRebels: -3,
+			Consulta: &pb.Consulta{
+				NumRebels: -3,
+			},
 		}, nil
 	}
-
-	var respuestaGetRebelds *pb.RespuestaGetNumberRebelds = nil
-	if (diff) {
-		Merge()
-		respuestaGetRebelds = valores[0]
-	} else {
-		respuestaGetRebelds = valores[0]
-	}
-	return respuestaGetRebelds, nil
 }
 
 // FUNCIONES AUXILIARES
@@ -226,6 +241,25 @@ func EleccionFulcrum() string {
 		curElection = 0;
 	}
 	return faddr
+}
+
+func RelojVecComparison(left *pb.RespuestaGetNumberRebelds, right *pb.RespuestaGetNumberRebelds) int {
+
+	lCon := left.Consulta
+	rCon := right.Consulta
+
+	if lCon.RelojVec.X == rCon.RelojVec.X && lCon.RelojVec.Y == rCon.RelojVec.Y && lCon.RelojVec.Z == rCon.RelojVec.Z {
+		return 1
+	}
+
+	if lCon.RelojVec.X <= rCon.RelojVec.X && lCon.RelojVec.Y <= rCon.RelojVec.Y && lCon.RelojVec.Z <= rCon.RelojVec.Z {
+		return 1
+	}
+
+	if lCon.RelojVec.X >= rCon.RelojVec.X && lCon.RelojVec.Y >= rCon.RelojVec.Y && lCon.RelojVec.Z >= rCon.RelojVec.Z {
+		return 0
+	}
+	return 1
 }
 
 func main() {

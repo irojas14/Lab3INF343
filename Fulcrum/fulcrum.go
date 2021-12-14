@@ -50,8 +50,7 @@ type server struct {
 
 func (s *server) Comando(ctx context.Context, in *pb.SolicitudComando) (*pb.RespuestaComandoFulcrum, error) {
 
-	log.Printf("En Comando Fulcrum id: %v\n", FulcrumId)
-	log.Printf("Comando: %v", in.Cmd.String())
+	fmt.Printf("En Comando Fulcrum id: %v. Comando: %v\n", FulcrumId, in.Cmd.String())
 
 	var RelojVectorRes *pb.RelojVector = nil
 
@@ -89,7 +88,7 @@ func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumber
 		if RebelNum == -3 {
 			log.Printf("No se encontró la ciudad %v en el planeta %v en el Fulcrum %v\n", in.Consulta.Coord.NombreCiudad, in.Consulta.Coord.NombrePlaneta, FulcrumId)
 			return &pb.RespuestaGetNumberRebelds{
-				NumRebels: -3,
+				Consulta: &pb.Consulta {NumRebels: -3},
 			}, nil
 		}
 
@@ -101,15 +100,17 @@ func (s *server) GetNumberRebelds(ctx context.Context, in *pb.SolicitudGetNumber
 		}
 
 		return &pb.RespuestaGetNumberRebelds{
-			ArchivoName: nombreArchivo,
-			FulcrumDir: curAddr,
-			NumRebels: RebelNum,
-			RelojVec: RelojesVectoresDict[nombreArchivo],
+			Consulta: &pb.Consulta{
+				ArchivoName: nombreArchivo,
+				FulcrumDir: curAddr,
+				NumRebels: RebelNum,
+				RelojVec: RelojesVectoresDict[nombreArchivo],
+			},
 		}, nil
 
 	} else {
 		log.Printf("Coord %v no presente en Fulcrum: %v\n", in.Consulta.Coord, FulcrumId)
-		return nil, nil
+		return &pb.RespuestaGetNumberRebelds{}, nil
 	}
 }
 
