@@ -31,13 +31,17 @@
         
             make fulcrum2
 
-    * Máquina dis151 - Informantes
+    * Máquina dis151 - Informante 
         
             make informante
 
     * Máquina dis152 - Fulcrum3
         
             make fulcrum3
+    
+    * Máquina dis152 - Informante
+            
+            make informante
         
 
 3. Con make clean se limpian los .txt en caso de querer realizar otra ejecución limpiando todo en la máquina donde se ejecuta el clean.
@@ -45,7 +49,7 @@
 ## Jugar:
 
 1. Inicializar MosEisley, Fulcrum 1, Fulcrum 2 y Fulcrum 3 (no importa el orden de inicialización).
-2. Inicializar informante y Leia (sin importar el orden).
+2. Inicializar los informante y Leia (sin importar el orden).
 3. Desde la consola de Informante se puede hacer lo siguiente:
     3.1. A + enter = Agregar una ciudad -> Ingresar nombre de planeta, nombre de ciudad y finalmente ingresar el número de rebeldes.
     3.2. N + enter = Actualizar nombre de ciudad -> Ingresar nombre de planeta, nombre de ciudad, ingresar nuevo nombre de ciudad.
@@ -60,4 +64,4 @@
 
 ## Observación:
 
-En las carpetas Fulcrum/X, existen archivos dummy.txt, se deben ignorar estos archivos, ya que fueron creados para poder pushear carpetas vacías a git. De todas  formas pueden ser borradas después de aplicar make clean.
+En las carpetas Fulcrum/X, existen archivos dummy.txt, se deben ignorar estos archivos, ya que fueron creados para poder pushear carpetas vacías a git. Es mejor que estén presentes, por lo que el make clean no los eliminará.
