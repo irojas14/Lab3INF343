@@ -291,8 +291,6 @@ func UpdateNumber(cmd *pb.Comando) *pb.RelojVector {
 }
 
 func ModificarRelojVector(nombreArchivo string) {
-	fmt.Printf("Nombre Archivo a Buscar: %v\n", nombreArchivo)
-	fmt.Printf("Dictionario de Relojes: %v - len:% v\n", RelojesVectoresDict, len(RelojesVectoresDict))
 	switch FulcrumId {
 	case 1:
 		RelojesVectoresDict[nombreArchivo].X++

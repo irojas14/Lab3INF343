@@ -88,19 +88,14 @@ func InsertarComandoEnRegistro(NombreDelArchivo string, comando *pb.Comando) err
 
 		lines := strings.Split(string(b), "\n")
 
-		fmt.Printf("Principio Lines: %v - len: %v\n", lines, len(lines))
-
 		for i, line := range lines {
 			if strings.Contains(line, comando.Coord.NombrePlaneta+" "+comando.Coord.NombreCiudad) {
-				fmt.Println("Line contiene Par Planeta-Ciudad")
 				lines[i] = linea
 				seReemplazo = true
 			}
 		}
 
 		output := strings.Join(lines, "\n")
-
-		fmt.Printf("Final Output: %v --\n", output)
 
 		_, err = file.WriteString(output)
 		if isError(err) {
@@ -143,18 +138,13 @@ func CambiarNombreCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, er
 
 	lines := strings.Split(string(b), "\n")
 
-	fmt.Printf("Principio Lines: %v - len: %v\n", lines, len(lines))
-
 	var nuevaLinea string = ""
 	for i, line := range lines {
 		if strings.Contains(line, comando.Coord.NombreCiudad) {
 			fmt.Println("La ciudad existe")
 			items := strings.Split(line, " ")
-			log.Printf("Items: %v: len: %v\n", items, len(items))
-			log.Printf("Comando Nuevo Valor: %v\n", comando.NuevoValorStr)
 			items[1] = comando.NuevoValorStr
 			nuevaLinea = strings.Join(items, " ")
-			log.Printf("Nueva Línea: %v\n", nuevaLinea)
 			lines[i] = nuevaLinea
 		}
 	}
@@ -165,8 +155,6 @@ func CambiarNombreCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, er
 	}
 
 	output := strings.Join(lines, "\n")
-
-	fmt.Printf("Final Output: %v --\n", output)
 
 	_, err = file.WriteString(output)
 	if isError(err) {
@@ -291,18 +279,13 @@ func CambiarNumberoDeSoldados(NombreDelArchivo string, comando *pb.Comando) (boo
 
 	lines := strings.Split(string(b), "\n")
 
-	fmt.Printf("Principio Lines: %v - len: %v\n", lines, len(lines))
-
 	var nuevaLinea string = ""
 	for i, line := range lines {
 		if strings.Contains(line, comando.Coord.NombreCiudad) {
 			fmt.Println("La ciudad existe")
 			items := strings.Split(line, " ")
-			log.Printf("Items: %v: len: %v\n", items, len(items))
-			log.Printf("Comando Nuevo Valor: %v\n", comando.NuevoValorInt)
 			items[2] = strconv.FormatInt(comando.NuevoValorInt, 10)
 			nuevaLinea = strings.Join(items, " ")
-			log.Printf("Nueva Línea: %v\n", nuevaLinea)
 			lines[i] = nuevaLinea
 		}
 	}
@@ -313,8 +296,6 @@ func CambiarNumberoDeSoldados(NombreDelArchivo string, comando *pb.Comando) (boo
 	}
 
 	output := strings.Join(lines, "\n")
-
-	fmt.Printf("Final Output: %v --\n", output)
 
 	_, err = file.WriteString(output)
 	if isError(err) {
@@ -400,50 +381,3 @@ func ObtenerRebels(NombreDelArchivo string, coord *pb.Ubicacion) (int64, error) 
 	log.Printf("Número Correcto Encontrado :%v\n", numRebels)
 	return numRebels, nil
 }
-
-/*
-func BorrarCiudad(NombreDelArchivo string, comando *pb.Comando) (bool, error) {
-
-	var file, err = os.OpenFile(NombreDelArchivo, os.O_WRONLY, 0644)
-
-	if isError(err) {
-		log.Fatalf("Error al abrir archivo en Insertar Cambios en Registro. Archivo: %v - Error: %v\n", NombreDelArchivo, err)
-		return false, err
-	}
-	defer file.Close()
-
-	// Aqui veremos si linea ya existe dentro del archivo del planeta.
-	b, err := ioutil.ReadFile(NombreDelArchivo)
-	if err != nil {
-		panic(err)
-	}
-
-	lines := strings.Split(string(b), "\n")
-
-	fmt.Printf("Principio Lines: %v - len: %v\n", lines, len(lines))
-
-	var deleteFlag string = ""
-	for i, line := range lines {
-		if strings.Contains(line, comando.Coord.NombreCiudad) {
-			lines[i] = ""
-			deleteFlag = " "
-		}
-	}
-
-	if deleteFlag == "" {
-		fmt.Print("No Existe la Ciudad")
-		return false, nil
-	}
-
-	output := strings.Join(lines, "\n")
-
-	fmt.Printf("Final Output: %v --\n", output)
-
-	_, err = file.WriteString(output)
-	if isError(err) {
-		log.Fatalf("Error al escribir linea de archivo %v. Error: %v\n", NombreDelArchivo, err)
-		return false, err
-	}
-	return true, nil
-}
-*/

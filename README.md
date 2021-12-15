@@ -64,4 +64,6 @@
 
 ## Observación:
 
+Una vez que se ingresó un comando en las consolas de los puntos 3.x y 4.x, volver o cancelar la operación, al menos que se detenga el proceso.
+
 En las carpetas Fulcrum/X, existen archivos dummy.txt, se deben ignorar estos archivos, ya que fueron creados para poder pushear carpetas vacías a git. Es mejor que estén presentes, por lo que el make clean no los eliminará.

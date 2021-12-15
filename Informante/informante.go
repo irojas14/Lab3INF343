@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	funcs "github.com/irojas14/Lab3INF343/Funciones"
 	pb "github.com/irojas14/Lab3INF343/Proto"
@@ -333,7 +334,7 @@ func CreateBaseCmd(tipoCmd pb.TipoComando, coord *pb.Ubicacion) *pb.Comando {
 func ResultadosComando(cmd *pb.Comando, rComando *pb.RespuestaComandoFulcrum, dirFulcrum string) {
 	
 	if rComando == nil || rComando.RelojVec == nil {
-		log.Printf("Respuesta Vacía. No se llevo a cabo ningún cambio")
+		fmt.Printf("Respuesta Vacía. No se llevo a cabo ningún cambio")
 		return
 	}
 	if rComando != nil {
@@ -345,9 +346,23 @@ func ResultadosComando(cmd *pb.Comando, rComando *pb.RespuestaComandoFulcrum, di
 			FulcrumDir:  dirFulcrum,
 		})
 
-		fmt.Printf(cmd.Nombre + " Realizado con Éxito: Nuevo Cambio: %v\n", cambios[len(cambios)-1])
+		fmt.Printf("Comando " + cmd.Nombre + " Realizado con Éxito\n")
+		var msg string = "Planeta: " + cmd.Coord.NombrePlaneta + " - Ciudad: " + cmd.Coord.NombreCiudad
+		switch(cmd.Tipo) {
+		case pb.TipoComando_AddCity:		
+			msg += " Número Rebeldes: " + strconv.FormatInt(cmd.NuevoValorInt, 10)		
+		case pb.TipoComando_UpdateNumber:
+			msg += " Nuevo Número Rebeldes: " + strconv.FormatInt(cmd.NuevoValorInt, 10)
+		case pb.TipoComando_UpdateName:
+			msg += "Nuevo Nombre Ciudad: " + cmd.NuevoValorStr
+		case pb.TipoComando_DeleteCity:
+			msg += "Ciudad: " + cmd.NuevoValorStr + " Eliminada"
+		}
+
+		fmt.Println(msg)
+
 	} else {
-		fmt.Printf(cmd.Nombre + " Fracasado. Respuesta Nula: %v\n", rComando)
+		fmt.Printf(cmd.Nombre + " Fracasado. Respuesta Nula")
 	}
 }
 
