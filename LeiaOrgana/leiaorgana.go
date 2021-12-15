@@ -52,22 +52,11 @@ func GetNumberRebelds(coord *pb.Ubicacion) error {
 
 	if rRebelds != nil {
 
-		if rRebelds.Consulta.NumRebels != -3 {
+		if rRebelds.Consulta != nil && rRebelds.Consulta.NumRebels != -3 {
 		
 			if (rRebelds.Consulta.RelojVec != nil) {
 				rRebelds.Consulta.Coord = coord;
-
-				conExist := false
-				for i, con := range(consultas) {
-
-					if con.Coord.NombrePlaneta == rRebelds.Consulta.Coord.NombrePlaneta && con.Coord.NombreCiudad == rRebelds.Consulta.Coord.NombreCiudad {
-						consultas[i] = rRebelds.Consulta
-						conExist = true
-					}
-				}
-				if (!conExist) {
-					consultas = append(consultas,  rRebelds.Consulta)
-				}
+				consultas = append(consultas,  rRebelds.Consulta)
 
 				log.Printf("Los Rebeldes en la ciudad de %v en el planeta %v son %v! - Reloj Vector: %v - Fulcrum: %v\n", 
 				coord.NombreCiudad, coord.NombrePlaneta, rRebelds.Consulta.NumRebels, rRebelds.Consulta.RelojVec, rRebelds.Consulta.FulcrumDir)
