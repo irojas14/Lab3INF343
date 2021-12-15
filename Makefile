@@ -21,4 +21,5 @@ fulcrum2:
 fulcrum3:
 	go run Fulcrum/fulcrum.go 3
 clean:
-	find . -type f -name '*.txt' ! -name 'dummy.txt' -delete
+	find -type f -name '*Info*' -delete
+	find -type f -name '*Log*' -delete 
